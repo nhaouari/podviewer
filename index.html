@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodViewer Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        /* The main container has a static grainy texture */
+        .player-container {
+            background-color: #111827; /* bg-gray-900 */
+            position: relative;
+            z-index: 10;
+        }
+        .player-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiGAAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///9ISEhHR0dJSUlKSkpMTExNTU1OTk5QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1eAgIAn5TceAAAAD3RSTlMAAQIDBAUGBwgJCgsMDQ4PEO2GfAAAAElJREFUSImNycWSAwAAMAzCNp7/f1pqOSA71xceD8vW1lZXV1dZWVk/nJKSkpKSkpOTk5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5dXTg8A93o59gAAAABJRU5ErkJggg==');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 15;
+        }
+        
+        /* Styles for word highlighting */
+        .text-highlight {
+            color: white;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .text-dim {
+            color: white;
+            opacity: 0.4;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Styling for editable fields */
+        [contenteditable] {
+            cursor: pointer;
+        }
+        [contenteditable]:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5); /* Ring effect */
+            border-radius: 4px;
+        }
+        #editable-title:empty::before {
+            content: '[Click to Edit Title]';
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+            pointer-events: none; /* Allow clicking through the placeholder */
+        }
+        .button-label {
+            max-width: 0;
+            opacity: 0;
+            transition: max-width 0.4s ease-out, opacity 0.2s ease-in;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .group:hover .button-label {
+            max-width: 100px;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+    
+    <!-- Dynamic background canvas -->
+    <canvas id="backgroundCanvas" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
+
+    <div class="player-container flex flex-col w-full max-w-lg aspect-square bg-black/30 backdrop-blur-2xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/10">
+        <h1 id="editable-title" contenteditable="true" class="flex-shrink-0 text-xl sm:text-2xl font-bold text-center p-1 mb-4">PodViewer</h1>
+        
+        <!-- Subtitles Container -->
+        <div class="relative flex-grow w-full bg-black/20 rounded-lg overflow-hidden mb-6">
+             <!-- Centered Subtitle Line -->
+            <div class="absolute inset-0 flex items-center justify-center p-4 text-2xl sm:text-3xl font-bold text-center leading-tight">
+                 <p id="subtitle-line" class="transition-opacity duration-300">Upload an audio and subtitle file to begin.</p>
+            </div>
+            
+            <!-- Branding inside the subtitle area -->
+            <p class="absolute bottom-4 left-4 text-base font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent p-1">PodViewer</p>
+            <p contenteditable="true" class="absolute bottom-4 right-4 text-sm font-bold opacity-70 p-1 text-right">Podcast by: Your Name</p>
+        </div>
+
+        <!-- Controls and File Uploads -->
+        <div class="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button id="resetBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/></svg>
+                    <span class="button-label ml-0 group-hover:ml-2">Reset</span>
+                </button>
+                 <button id="playPauseBtn" class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed flex-shrink-0">
+                    <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
+                <div id="timeDisplay" class="font-mono text-sm text-gray-300 w-28 text-center">00:00 / 00:00</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <input type="file" id="audio-upload" accept=".mp3, .wav, .ogg" class="hidden">
+                <label for="audio-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" y1="5" x2="22" y2="5"/><line x1="19" y1="2" x2="19" y2="8"/><path d="M10 12v6"/><path d="M7 12v6"/><path d="M13 12v6"/><path d="m16 17-3-3-3 3"/></svg>
+                    <span class="button-label ml-0 group-hover:ml-2">Audio</span>
+                </label>
+
+                <input type="file" id="subtitle-upload" accept=".vtt" class="hidden">
+                <label for="subtitle-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-6.5 0-10.13 4.43-10.9 5.5C1.87 11.63 5.5 16 12 16s10.13-4.43 10.9-5.5C22.13 9.43 18.5 5 12 5Z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+                    <span class="button-label ml-0 group-hover:ml-2">Subtitles</span>
+                </label>
+            </div>
+        </div>
+
+        <audio id="audioPlayer" class="hidden"></audio>
+    </div>
+
+    <script>
+        // DOM Element References
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioUpload = document.getElementById('audio-upload');
+        const subtitleUpload = document.getElementById('subtitle-upload');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        const backgroundCanvas = document.getElementById('backgroundCanvas');
+        
+        const subtitleLine = document.getElementById('subtitle-line');
+        const timeDisplay = document.getElementById('timeDisplay');
+        
+        // Audio & Subtitle State
+        let audioContext;
+        let analyser;
+        let source;
+        let subtitles = [];
+        let isReadyToPlay = false;
+
+        const backgroundCtx = backgroundCanvas.getContext('2d');
+        
+        // --- 1. FILE UPLOAD AND PREPARATION ---
+        audioUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const objectUrl = URL.createObjectURL(file);
+                audioPlayer.src = objectUrl;
+                subtitleLine.textContent = 'Audio loaded. Please upload subtitles.';
+                checkIfReady();
+            }
+        });
+
+        subtitleUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    subtitles = parseVTT(e.target.result);
+                    if (subtitles.length > 0) {
+                        subtitleLine.textContent = 'Subtitles loaded. Ready to play!';
+                    } else {
+                        subtitleLine.textContent = 'Could not parse VTT file. Please check format.';
+                    }
+                    checkIfReady();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function checkIfReady() {
+            if (audioPlayer.src && subtitles.length > 0) {
+                playPauseBtn.disabled = false;
+                resetBtn.disabled = false;
+                isReadyToPlay = true;
+                subtitleLine.textContent = 'Ready to play!';
+            }
+        }
+        
+        // --- 2. SUBTITLE PARSING (.VTT) ---
+        function parseVTT(vttContent) {
+            const lines = vttContent.replace(/\r\n/g, '\n').split('\n');
+            const cues = [];
+            let i = 0;
+            const timeToSeconds = (timeStr) => {
+                if(!timeStr) return 0;
+                const parts = timeStr.split(':');
+                let seconds = 0;
+                if (parts.length === 3) {
+                    seconds += parseFloat(parts[0]) * 3600;
+                    seconds += parseFloat(parts[1]) * 60;
+                    seconds += parseFloat(parts[2]);
+                } else if (parts.length === 2) {
+                    seconds += parseFloat(parts[0]) * 60;
+                    seconds += parseFloat(parts[1]);
+                }
+                return seconds;
+            };
+
+            while(i < lines.length) {
+                if (lines[i].trim() === '' || lines[i].includes('WEBVTT')) {
+                    i++;
+                    continue;
+                }
+                const timeMatch = lines[i].match(/(\d{2}:)?\d{2}:\d{2}\.\d{3} --> (\d{2}:)?\d{2}:\d{2}\.\d{3}/);
+                if (timeMatch) {
+                    const [startTime, endTime] = lines[i].split(' --> ');
+                    const start = timeToSeconds(startTime);
+                    const end = timeToSeconds(endTime);
+                    i++;
+                    let text = '';
+                    while(i < lines.length && lines[i].trim() !== '' && !lines[i].includes('-->')) {
+                        text += (text ? ' ' : '') + lines[i].trim();
+                        i++;
+                    }
+                    cues.push({ start, end, text });
+                } else {
+                    i++;
+                }
+            }
+            return cues;
+        }
+
+        // --- 3. AUDIO VISUALIZATION (WEB AUDIO API) ---
+        function setupAudioContext() {
+            if (audioContext) return;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512;
+            analyser.smoothingTimeConstant = 0.85;
+            source = audioContext.createMediaElementSource(audioPlayer);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+        }
+
+        let particles = [];
+        const colors = ['#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#3b82f6'];
+
+        function drawDynamicBackground() {
+            if (!analyser) return; // Don't draw if analyser isn't ready
+            const { width, height } = backgroundCanvas;
+            backgroundCtx.clearRect(0, 0, width, height);
+            backgroundCtx.filter = 'blur(80px)';
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const frequencyData = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(frequencyData);
+
+            const bass = frequencyData.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
+            const mids = frequencyData.slice(10, 40).reduce((a, b) => a + b, 0) / 30;
+
+            if (particles.length < 15 && Math.random() > 0.95) {
+                 particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: (Math.random() - 0.5) * 1,
+                    radius: 50 + Math.random() * 100,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                 });
+            }
+            
+            particles.forEach((p, i) => {
+                p.x += p.vx + (Math.random() - 0.5) * (mids/255);
+                p.y += p.vy + (Math.random() - 0.5) * (mids/255);
+                p.radius = 80 + (bass * 1.5) + Math.sin(p.x * 0.01) * 20;
+
+                if (p.x - p.radius > width || p.x + p.radius < 0 || p.y - p.radius > height || p.y + p.radius < 0) {
+                    particles.splice(i, 1);
+                }
+
+                backgroundCtx.beginPath();
+                backgroundCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                backgroundCtx.fillStyle = p.color;
+                backgroundCtx.globalAlpha = 0.6;
+                backgroundCtx.fill();
+            });
+            backgroundCtx.filter = 'none';
+        }
+
+        // Main animation loop
+        function animatePlayer() {
+            requestAnimationFrame(animatePlayer);
+            if (audioPlayer.paused) return; // Pause animation if audio is paused
+            drawDynamicBackground();
+        }
+
+        // --- 4. PLAYBACK CONTROLS & SYNC ---
+        playPauseBtn.addEventListener('click', () => {
+            if (!isReadyToPlay) return;
+            if (!audioContext) setupAudioContext();
+            if (audioContext.state === 'suspended') audioContext.resume();
+            audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            audioPlayer.currentTime = 0;
+        });
+
+        audioPlayer.onplay = () => {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            animatePlayer(); // Start animation on play
+        };
+
+        audioPlayer.onpause = () => {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        };
+        
+        audioPlayer.onloadedmetadata = () => updateTimeDisplay();
+        audioPlayer.ontimeupdate = () => {
+            updateTimeDisplay();
+            updateSubtitles();
+        };
+        
+        function updateTimeDisplay() {
+            const formatTime = (time) => {
+                const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+                const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+                return `${minutes}:${seconds}`;
+            }
+            const duration = isNaN(audioPlayer.duration) ? 0 : audioPlayer.duration;
+            timeDisplay.textContent = `${formatTime(audioPlayer.currentTime)} / ${formatTime(duration)}`;
+        }
+        
+        function updateSubtitles() {
+            if (!subtitles.length) return;
+            const currentTime = audioPlayer.currentTime;
+            
+            const currentCue = subtitles.find(cue => currentTime >= cue.start && currentTime <= cue.end);
+
+            if (currentCue) {
+                const words = currentCue.text.split(' ');
+                const cueDuration = currentCue.end - currentCue.start;
+                
+                if (cueDuration <= 0) {
+                     subtitleLine.innerHTML = `<span class="text-highlight">${currentCue.text}</span>`;
+                     return;
+                }
+
+                const timeIntoCue = currentTime - currentCue.start;
+                const progressInCue = timeIntoCue / cueDuration;
+
+                let highlightIndex = Math.floor(progressInCue * words.length);
+                highlightIndex = Math.min(highlightIndex, words.length - 1);
+                
+                const styledText = words.map((word, index) => {
+                    const className = index === highlightIndex ? 'text-highlight' : 'text-dim';
+                    return `<span class="${className}">${word}</span>`;
+                }).join(' ');
+
+                subtitleLine.innerHTML = styledText;
+            } else {
+                subtitleLine.innerHTML = '';
+            }
+        }
+        
+        // --- 5. INITIALIZATION ---
+        function resizeAllCanvases() {
+            const canvas = backgroundCanvas; // Only one canvas now
+            try {
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+            } catch (e) {
+                console.error("Error resizing canvas:", e);
+            }
+        }
+        window.addEventListener('resize', resizeAllCanvases);
+        resizeAllCanvases();
+
+    </script>
+</body>
+</html>
