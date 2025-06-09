@@ -4,7 +4,7 @@ PodViewer is an interactive, browser-based tool designed to help you create stun
 
 **➡️ [View the Live Demo](https://nhaouari.github.io/podviewer/)**
 
-![PodViewer Screenshot](https://imgur.com/a/O4JPKZt)
+![PodViewer Screenshot](https://i.imgur.com/CAnhCAj.png)
 
 
 ## Features
