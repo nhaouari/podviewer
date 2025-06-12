@@ -113,7 +113,10 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
-        .is-highlighted.fx-subline { position: relative; } 
+        .is-highlighted.fx-subline { 
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        } 
         .is-highlighted.fx-subline::after {
             content: '';
             position: absolute;
@@ -241,6 +244,7 @@
                     </div>
                     <p id="brand-podviewer" class="absolute bottom-4 left-4 text-base font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent p-1 transition-opacity duration-300">PodViewer</p>
                     <p id="brand-podcastby" contenteditable="true" class="absolute bottom-4 right-4 text-sm font-bold opacity-70 p-1 text-right transition-opacity duration-300">Podcast by: Your Name</p>
+                    
                 </div>
 
                 <div id="controls-container" dir="ltr">
@@ -382,7 +386,7 @@
             sad: { palette: ['#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'], frequency: 0.99 },
         };
         let currentMood = moodPresets.default;
-        let rawVTTContent = 'WEBVTT\n\n00:00.000 --> 00:03.000\n<fx:title1>MAIN SECTION TITLE</fx:title1>\n\n00:03.000 --> 00:06.000\n<fx:title2>Subsection Title</fx:title2>\n\n00:06.000 --> 00:09.000\n<fx:title3>Minor Heading</fx:title3>\n\n00:09.000 --> 00:12.000\nRegular subtitle text\n\n00:12.000 --> 00:15.000\n<fx:typing>This text will type out letter by letter</fx:typing>';
+        let rawVTTContent = 'WEBVTT\n\n00:00:00.000 --> 00:01.300\n<fx:title1>One year ago,</fx:title1>\n\n00:01.300 --> 00:06.000\none year ago, <fx:pulse>Apple Inc</fx:pulse> attempted a <fx:shake>hostile rebrand</fx:shake> of the letters AI,\n\n00:06.000 --> 00:10.000\nby changing it from Artificial Intelligence to <fx:glow>Apple Intelligence</fx:glow>.\n\n00:10.500 --> 00:12.500\nRegular subtitle text\n\n00:12.500 --> 00:18.000\nbut <fx:shake>ultimately</fx:shake> the move failed when we learned that AI is just... <fx:glitch>Actual Indians</fx:glitch>.';
         let pastedImages = {};
         let lastRevealedLine = -1;
         let editorDecorations = [];
@@ -542,6 +546,17 @@
                 resetBtn.disabled = false;
                 isReadyToPlay = true;
                 subtitleLine.textContent = 'Ready to play!';
+                
+                // Parse the default VTT content and log the results for debugging
+                console.log("=== VTT PARSING TEST ===");
+                const testSubtitles = parseVTTWithEffects(rawVTTContent);
+                console.log("Parsed subtitles:", testSubtitles);
+                testSubtitles.forEach((cue, index) => {
+                    console.log(`Cue ${index + 1}:`, cue.originalText);
+                    console.log("Words:", cue.words);
+                });
+                console.log("Kinetic enabled:", settings.kineticEnabled);
+                console.log("=== END TEST ===");
             }
         }
         
@@ -561,7 +576,7 @@
 
             while(i < lines.length) {
                 if (lines[i].trim() === '' || lines[i].includes('WEBVTT')) { i++; continue; }
-                const timeMatch = lines[i].match(/(\d{2}:)?\d{2}:\d{2}\.\d{3} --> (\d{2}:)?\d{2}:\d{2}\.\d{3}/);
+                const timeMatch = lines[i].match(/(\d{1,2}:)?\d{1,2}:\d{2}\.\d{3} --> (\d{1,2}:)?\d{1,2}:\d{2}\.\d{3}/);
                 if (timeMatch) {
                     const cueLineNumber = i + 1; // Store original line number for editor highlighting
                     const [startTime, endTime] = lines[i].split(' --> ');
@@ -594,16 +609,33 @@
                     let lastIndex = 0;
                     let wordMatch;
                     
-                    while ((wordMatch = regex.exec(processedText)) !== null) {
+                    console.log(`Parsing cue text: "${processedText}"`);
+                    
+                    // Debug: Test the regex directly
+                    const testRegex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1(?::\2)?>/g;
+                    console.log("Testing regex on:", processedText);
+                    console.log("Regex pattern:", testRegex.source);
+                    
+                    // Test with a simple case
+                    const testMatch = testRegex.exec(processedText);
+                    console.log("Direct regex test result:", testMatch);
+                    
+                    // Reset regex for actual parsing
+                    const effectsRegex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1(?::\2)?>|<(img):([^>]+)>/g;
+                    
+                    while ((wordMatch = effectsRegex.exec(processedText)) !== null) {
+                        console.log("Found match:", wordMatch);
                         // Add any plain text before the current tag
                         if (wordMatch.index > lastIndex) {
                             const plainText = processedText.substring(lastIndex, wordMatch.index);
+                            console.log("Adding plain text:", plainText);
                             plainText.trim().split(' ').filter(w => w).forEach(word => {
                                 finalWords.push({ type: 'text', text: word, effects: {} });
                             });
                         }
                         if (wordMatch[1]) { // Matched <tag:value>content</tag>
                             const [, tagType, tagValue, tagContent] = wordMatch;
+                            console.log(`Matched tag: ${tagType}:${tagValue} with content: "${tagContent}"`);
                             const effects = {};
                             if (tagType === 'c') effects.color = tagValue;
                             else if (tagType === 'fx') {
@@ -611,6 +643,7 @@
                                 console.log(`Parsed fx effect: ${tagValue} for content: "${tagContent}"`);
                             }
                             tagContent.trim().split(' ').filter(w => w).forEach(word => {
+                                console.log(`Adding word with effects:`, { text: word, effects: effects });
                                 finalWords.push({ type: 'text', text: word, effects: effects });
                             });
                         } else if (wordMatch[4]) { // Matched <img:src,fx:effect>
@@ -625,16 +658,19 @@
                             }
                             finalWords.push({ type: 'image', src: src, effects: effects });
                         }
-                        lastIndex = regex.lastIndex;
+                        lastIndex = effectsRegex.lastIndex;
                     }
 
                     // Add any remaining plain text after the last tag
                     if (lastIndex < processedText.length) {
                         const plainText = processedText.substring(lastIndex);
+                        console.log("Adding remaining plain text:", plainText);
                         plainText.trim().split(' ').filter(w => w).forEach(word => {
                             finalWords.push({ type: 'text', text: word, effects: {} });
                         });
                     }
+
+                    console.log("Final words array:", finalWords);
 
                     cues.push({ start, end, words: finalWords, mood: mood, lineNumber: cueLineNumber, originalText: text });
                 } else {
@@ -994,7 +1030,6 @@
                         console.log(`Typing progress: ${charsToShow}/${totalChars} chars (${(pacedProgress * 100).toFixed(1)}%)`);
                         
                         // Build the revealed text character by character
-                        let revealedText = '';
                         let charCount = 0;
                         let wordElements = [];
                         
@@ -1004,9 +1039,15 @@
                             let wordStyle = '';
                             let wordClasses = '';
                             
-                            // Apply color effects if present
-                            if (settings.kineticEnabled && word.effects && word.effects.color) {
-                                wordStyle = `color: ${word.effects.color};`;
+                            // Apply ALL effects if present (not just color)
+                            if (settings.kineticEnabled && word.effects) {
+                                if (word.effects.color) {
+                                    wordStyle = `color: ${word.effects.color};`;
+                                }
+                                // Apply non-typing effects as classes
+                                if (word.effects.animation && word.effects.animation !== 'typing') {
+                                    wordClasses = `is-highlighted fx-${word.effects.animation}`;
+                                }
                             }
                             
                             // Calculate how many characters of this word to show
@@ -1018,8 +1059,9 @@
                                 const charsInThisWord = Math.min(charsToShow - wordStartChar, word.text.length);
                                 wordContent = word.text.substring(0, charsInThisWord);
                                 
-                                // Add typing cursor if we're in the middle of this word
-                                if (charsInThisWord < word.text.length && charsToShow >= wordStartChar && charsToShow < wordEndChar) {
+                                // Add typing cursor if we're in the middle of this word AND it has typing effect
+                                if (word.effects && word.effects.animation === 'typing' && 
+                                    charsInThisWord < word.text.length && charsToShow >= wordStartChar && charsToShow < wordEndChar) {
                                     wordContent += '<span class="typing-cursor">|</span>';
                                 }
                             }
@@ -1034,8 +1076,12 @@
                             if (spaceChar && charsToShow > wordEndChar) {
                                 wordElements.push(' ');
                             } else if (spaceChar && charsToShow === wordEndChar + 1) {
-                                // Show typing cursor at space position
-                                wordElements.push('<span class="typing-cursor">|</span>');
+                                // Show typing cursor at space position only if current word has typing effect
+                                if (word.effects && word.effects.animation === 'typing') {
+                                    wordElements.push('<span class="typing-cursor">|</span>');
+                                } else {
+                                    wordElements.push(' ');
+                                }
                                 break;
                             }
                         }
@@ -1047,35 +1093,55 @@
                         const progressRatio = Math.max(0, timeIntoCue / cueDuration);
                         const pacedProgress = Math.pow(progressRatio, settings.highlightPacing);
 
-                        let highlightIndex = Math.floor(pacedProgress * words.length);
-                        highlightIndex = Math.min(Math.max(0, highlightIndex), words.length - 1);
-                        
-                        subtitleLine.innerHTML = words.map((word, index) => {
-                            const isHighlighted = index === highlightIndex;
-                            let style = '';
-                            let classes = isHighlighted ? 'is-highlighted' : 'text-dim';
-                            let content = word.text;
+                        // Word-level highlighting again. If several consecutive words share the *same object* for
+                        // `effects` (because they came from the same <fx:…> wrapper) we treat them as a mini-group
+                        // and highlight them together – this keeps phrases like "Apple Inc" pulsing together while
+                        // still letting the caret move word-by-word across plain text.
 
-                            if (settings.kineticEnabled && word.effects) {
-                                if(word.effects.color) {
-                                    style += `color: ${word.effects.color};`;
-                                }
-                                if(isHighlighted && word.effects.animation) {
-                                    if (word.effects.animation !== 'wave') {
-                                           classes += ` fx-${word.effects.animation}`;
-                                    }
-                                }
-                                
-                                if(isHighlighted && word.effects.animation === 'wave') {
-                                    classes += ` fx-wave`;
-                                    content = word.text.split('').map((char, charIndex) => 
-                                        `<span style="animation-delay: ${charIndex * 0.05}s">${char}</span>`
-                                    ).join('');
-                                }
-                            }
+                        const highlightWordIndex = Math.floor(pacedProgress * words.length);
+                        const htmlParts = [];
 
-                            return `<span class="${classes}" style="${style}">${content}</span>`;
-                        }).join(' ');
+                        words.forEach((word, index) => {
+                            const prevEffectsObj = index > 0 ? words[index - 1].effects : null;
+                            const sameAsPrev = prevEffectsObj === word.effects; // object reference equality on purpose
+                            // If this word shares an effects object with the previous one, use the *same* highlight
+                            // status so the phrase animates together. Otherwise highlight strictly by index.
+                            const isHighlighted = sameAsPrev ? (index - 1) === highlightWordIndex : index === highlightWordIndex;
+                                 let style = '';
+                                 let classes = isHighlighted ? 'is-highlighted' : 'text-dim';
+                                 let content = word.text;
+                                 // DEBUG
+                                 console.log(`Word: "${word.text}", isHighlighted: ${isHighlighted}, effects:`, word.effects, `kineticEnabled: ${settings.kineticEnabled}`);
+
+                                 if (settings.kineticEnabled && word.effects) {
+                                     if (word.effects.color) {
+                                         style += `color: ${word.effects.color};`;
+                                         console.log(`Applied color: ${word.effects.color}`);
+                                     }
+
+                                     // Apply animation classes when the GROUP is highlighted (not per-word)
+                                     if (isHighlighted && word.effects.animation) {
+                                         if (word.effects.animation !== 'wave') {
+                                             classes += ` fx-${word.effects.animation}`;
+                                             console.log(`Applied animation class: fx-${word.effects.animation}`);
+                                         }
+                                     }
+
+                                     if (isHighlighted && word.effects.animation === 'wave') {
+                                         classes += ' fx-wave';
+                                         content = word.text.split('').map((char, charIndex) =>
+                                             `<span style="animation-delay: ${charIndex * 0.05}s">${char}</span>`
+                                         ).join('');
+                                         console.log('Applied wave effect');
+                                     }
+                                 }
+
+                                 htmlParts.push(`<span class="${classes}" style="${style}">${content}</span>`);
+                                 // Add normal space between words (except after last word)
+                                 if (index < words.length - 1) htmlParts.push(' ');
+                        });
+
+                        subtitleLine.innerHTML = htmlParts.join('');
                     }
                 }
             } else {
