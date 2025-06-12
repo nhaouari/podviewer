@@ -1,91 +1,151 @@
-# PodViewer 🎙️✨
-
-PodViewer is an interactive, browser-based tool designed to help you create stunning, shareable video clips from your audio podcasts. It generates a dynamic, colorful background that pulses with your audio and displays perfectly synchronized, word-by-word subtitles, all within a square frame ideal for social media platforms like Instagram, TikTok, and YouTube Shorts.
-
-**➡️ [View the Live Demo](https://nhaouari.github.io/podviewer/)**
-
-![PodViewer Screenshot](https://i.imgur.com/CAnhCAj.png)
-
-
-## Features
-
--   **Square Video Format (1:1):** Perfectly sized for social media feeds.
--   **Dynamic Animated Background:** A beautiful, generative lava-lamp effect that moves in time with your audio's frequencies.
--   **Word-by-Word Subtitle Highlighting:** Captivates viewers by highlighting words precisely as they are spoken.
--   **Easy File Uploads:** Simple icon-based buttons to upload your MP3 audio and `.vtt` subtitle files.
--   **Fully Editable Text:** Click to edit the main title and the "Podcast by" credit on the fly.
--   **Modern, Minimal UI:** A clean interface that puts the focus on your content.
--   **No Software Required:** Runs entirely in your web browser. No installs, no plugins.
-
-## How to Create Your Podcast Clip
-
-Follow these steps to generate a professional-looking podcast video clip in minutes.
-
-### Step 1: Generate Your Audio & Subtitles
-
-Before using PodViewer, you need an audio file and a matching subtitle file. A great, free tool for this is **Google AI Studio**.
-
-1.  **Generate Audio:** Go to the [Google AI Studio - Speech Generator](https://aistudio.google.com/generate-speech).
-    * Type or paste your script.
-    * Choose a voice you like.
-    * Click **Generate** and then download the `.mp3` audio file.
-2.  **Generate Subtitles:**
-    * Use Google AI Studio upload the audio and generate subtitles using vtt.
-    * Copy this timestamped text and format it into a `.vtt` file. The structure should look like this:
-
-    ```vtt
-    WEBVTT
-
-    00:00.354 --> 00:02.184
-    Good evening, everyone.
-
-    00:02.834 --> 00:04.514
-    Please hold your applause.
-
-    00:04.884 --> 00:10.164
-    My ego is a finely tuned instrument and you're threatening to over-calibrate it.
-    ```
-    * Save this file with a `.vtt` extension (e.g., `mysubtitles.vtt`). **Make sure there is a blank line between each subtitle entry.**
-
-### Step 2: Use PodViewer
-
-1.  **Open the [PodViewer App](https://nhaouari.github.io/podviewer/).**
-2.  **Upload Audio:** Click the **Audio** button and select your `.mp3` file.
-3.  **Upload Subtitles:** Click the **Subtitles** button and select your `.vtt` file.
-4.  **Customize Text:**
-    * Click on the main title (`PodViewer`) to edit your podcast's title.
-    * Click on `Podcast by: Your Name` in the bottom-right to add your credit.
-5.  **Prepare to Record:** The player is now ready. Maximize your browser window for the best quality.
-
-### Step 3: Record Your Clip
-
-The final step is to record the PodViewer window as it plays.
-
-1.  **Use a Screen Recorder:**
-    * **macOS:** You can use the built-in screen recorder (press `Cmd + Shift + 5`).
-    * **Windows:** You can use the snipping tool for recording.
-    * **Third-party tools:** OBS Studio or Loom are also great options.
-2.  **Start Recording:** Start your screen recording, then click the **Play** button in PodViewer.
-3.  **Let it Play:** Allow the audio to play all the way through.
-4.  **Stop Recording:** Once finished, stop the screen recording.
-5.  **Trim (Optional):** You can use a simple video editor (like iMovie on Mac or Clipchamp on Windows) to trim the start and end of your recording.
-
-You now have a high-quality, perfectly square video clip ready to be shared on your favorite social media platform!
-
-## How to Set Up Locally
-
-This project is a single `index.html` file with no build process, so setup is very simple.
-
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/your-username/podviewer.git](https://github.com/your-username/podviewer.git)
-    ```
-2.  **Navigate to the directory:**
-    ```sh
-    cd podviewer
-    ```
-3.  **Open in Browser:** Simply open the `index.html` file directly in your web browser.
+Of course! Based on the provided code, here is a comprehensive `README.md` file for the PodViewer project.
 
 ---
 
-*Built with HTML, Tailwind CSS, and plain JavaScript using Gemini 2.5 Pro*
+# PodViewer 🎧✨
+
+**A dynamic, browser-based player for creating captivating audiograms with kinetic typography, image overlays, and audio-reactive visuals. All from a single HTML file.**
+
+PodViewer transforms standard audio and subtitle files into an engaging visual experience, perfect for sharing podcast clips, audio snippets, or narrated stories on social media.
+
+
+*(A sample screenshot demonstrating the player interface with kinetic text and a dynamic background.)*
+
+---
+
+## 🚀 Key Features
+
+*   **Synchronized Playback:** Flawlessly syncs an audio file (`.mp3`, `.wav`, `.ogg`) with a WebVTT subtitle file (`.vtt`).
+*   **Kinetic Typography Engine:** Bring words to life! The player supports word-by-word highlighting with a rich library of animations, all controlled via simple tags in your VTT file.
+    *   Animations include: `shake`, `pulse`, `wave`, `zoom-in`, `slide-up`, `glitch`, `glow`, and more.
+    *   Special effects for hierarchical titles (`title1`, `title2`, `title3`) and underlines (`subline`).
+    *   A full-line `typing` effect for a classic "live typing" feel.
+*   **Dynamic Audio Visualization:** A generative, audio-reactive background that pulses and shifts with the beat of your audio. The mood and color palette can be controlled directly from the VTT file.
+*   **Image & GIF Support:** Display static images or animated GIFs at specific moments by adding a simple `<img:...>` tag to your subtitles.
+*   **Advanced VTT Editor:**
+    *   Powered by **Monaco Editor** (the engine behind VS Code) for a professional editing experience.
+    *   **Focus Mode:** Isolates the currently playing subtitle cue in the editor, allowing you to make live edits without distraction.
+    *   **Live Reload:** Changes made in the editor are reflected in the player in real-time.
+*   **Easy Image Integration:** Upload images or **paste them directly from your clipboard** into the editor. The app handles the Base64 conversion and embeds the image seamlessly.
+*   **Live Customization Panel:** Fine-tune the experience on the fly with a comprehensive settings modal.
+    *   Adjust font family, size, and highlight timing.
+    *   Toggle kinetic effects, image visibility, and background blur.
+    *   Switch to **RTL mode** for right-to-left languages like Arabic.
+*   **Zero Dependencies & Portable:** Everything is packed into a **single `index.html` file**. No build process, no server needed. Just open it in your browser.
+
+---
+
+## 🛠️ How to Use
+
+1.  **Open the File:** Open [Link](nhaouari.github.io/podviewer/).
+2.  **Upload Audio:** Click the "Audio" button and select your `.mp3`, `.wav`, or `.ogg` file.
+3.  **Upload Subtitles:** Click the "Subtitles" button and select your `.vtt` file (see syntax below).
+4.  **Play!** Press the play button to see the magic happen.
+5.  **Customize (Optional):**
+    *   Click the **Settings (⚙️)** icon to open the live settings panel and adjust the look and feel.
+    *   Toggle **Advanced Mode** in the settings to open the live VTT editor.
+    *   In Advanced Mode, toggle **Editor Focus Mode** to easily edit the text for the current audio segment.
+
+---
+
+## ✨ The VTT Magic: Syntax Guide
+
+PodViewer extends the standard VTT format with custom tags to control the visual effects.
+
+### Basic Cue
+
+This is a standard VTT cue. The text will appear with word-by-word highlighting.
+
+```vtt
+WEBVTT
+
+00:00:05.000 --> 00:00:08.500
+This is a standard line of text.
+```
+
+### Kinetic Word Effects `<fx:...>`
+
+Wrap a word or phrase in an `<fx:...>` tag to apply a specific animation when it's highlighted.
+
+```vtt
+00:00:09.000 --> 00:00:12.000
+This text will <fx:pulse>pulse</fx:pulse> and this will <fx:shake>shake</fx:shake>.
+```
+
+**Available Effects:** `shake`, `pulse`, `wave`, `zoom-in`, `slide-up`, `glitch`, `fade-in`, `glow`, `subline`.
+
+### Title & Heading Effects
+
+Use these for more prominent, stylized text.
+
+```vtt
+00:00:13.000 --> 00:00:16.000
+<fx:title1>THIS IS A MAJOR HEADING</fx:title1>
+
+00:00:17.000 --> 00:00:20.000
+<fx:title2>A Slightly Smaller Subheading</fx:title2>
+```
+
+### Typing Effect
+
+The `<fx:typing>` tag applies to the entire line. The text will be revealed character by character over the duration of the cue.
+
+```vtt
+00:00:21.000 --> 00:00:26.000
+<fx:typing>This entire line will be typed out live.</fx:typing>
+```
+
+### Displaying Images `<img:...>`
+
+Use the `<img:...>` tag to display an image or GIF. The subtitle text will be hidden for the duration of this cue.
+
+- **Using an external URL:**
+  ```vtt
+  00:00:27.000 --> 00:00:31.000
+  <img:https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjEx.../giphy.gif>
+  ```
+- **Using an uploaded/pasted image:**
+  When you upload or paste an image, the editor inserts a tag with a local reference.
+  ```vtt
+  00:00:32.000 --> 00:00:36.000
+  <img:pasted_image_1678886400000.png>
+  ```
+- **Adding an effect to an image:**
+  ```vtt
+  00:00:37.000 --> 00:00:42.000
+  <img:my_image.jpg,fx:slow-zoom-in>
+  ```
+
+### Controlling Background Mood `<mood:...>`
+
+Add a `<mood:...>` tag at the beginning of a cue's text to change the color palette and behavior of the audio-reactive background.
+
+```vtt
+00:00:43.000 --> 00:00:48.000
+<mood:angry>Now the tone has shifted, and the background will be red and chaotic.
+
+00:00:49.000 --> 00:00:54.000
+<mood:calm,0.99>This part is very calm. The second value (0.99) makes particles appear less frequently.
+```
+
+**Available Moods:** `default`, `angry`, `calm`, `happy`, `sad`.
+
+---
+
+## 💻 Built With
+
+*   **HTML5**
+*   **Tailwind CSS** - For rapid, utility-first UI development.
+*   **Vanilla JavaScript (ES6+)** - No frameworks, just modern JS.
+*   **Web Audio API** - For the dynamic, audio-reactive background visualization.
+*   **Monaco Editor** - The editor that powers VS Code, for a first-class VTT editing experience.
+
+---
+
+## 🔮 Future Ideas
+
+- [ ] **Video Export:** The most requested feature! Implement recording the canvas animation to an `.mp4` or `.webm` file using `MediaRecorder` API.
+- [ ] **UI for Effects:** A user-friendly interface to add kinetic effects instead of requiring manual VTT tag editing.
+- [ ] **Save/Load Project:** Save the current state (audio, VTT, settings) to a local file and load it back later.
+- [ ] **More Effects & Transitions:** Expand the library of kinetic text animations and add transitions between image/text cues.
+- [ ] **Waveform Display:** Add an optional audio waveform visualizer to the UI.

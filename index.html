@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PodViewer Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&family=Inter:wght@400;700&family=Playfair+Display:wght@700&family=Poppins:wght@500&family=Roboto+Slab:wght@400&family=Source+Code+Pro&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
         }
-        /* The main container has a static grainy texture */
+        .player-wrapper {
+            transition: all 0.5s ease-in-out;
+        }
+        .editor-wrapper {
+             transition: all 0.5s ease-in-out;
+        }
         .player-container {
-            background-color: #111827; /* bg-gray-900 */
+            background-color: #111827;
             position: relative;
             z-index: 10;
         }
@@ -23,38 +30,24 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiGAAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///9ISEhHR0dJSUlKSkpMTExNTU1OTk5QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1eAgIAn5TceAAAAD3RSTlMAAQIDBAUGBwgJCgsMDQ4PEO2GfAAAAElJREFUSImNycWSAwAAMAzCNp7/f1pqOSA71xceD8vW1lZXV1dZWVk/nJKSkpKSkpOTk5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5dXTg8A93o59gAAAABJRU5ErkJggg==');
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiGAAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///9ISEhHR0dJSUlKSkpMTExNTU1OTk5QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1eAgIAn5TceAAAAD3RSTlMAAQIDBAUGBwgJCgsMDQ4PEO2GfAAAAElJREFUSImNycWSAwAAMAzCNp7/f1pqOSA71xceD8vW1lZXV1dZWVk/nJKSkpKSkpOTk5eXl5eXl5eXl5eXl5eXl5dXTg8A93o59gAAAABRU5ErkJggg==');
             opacity: 0.05;
             pointer-events: none;
             z-index: 15;
         }
-        
-        /* Styles for word highlighting */
-        .text-highlight {
-            color: white;
-            opacity: 1;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .text-dim {
-            color: white;
-            opacity: 0.4;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        /* Styling for editable fields */
-        [contenteditable] {
-            cursor: pointer;
-        }
+        .text-dim { opacity: 0.4; transition: opacity 0.3s ease-in-out; }
+        .is-highlighted { opacity: 1; transition: opacity 0.3s ease-in-out; }
+        [contenteditable] { cursor: pointer; }
         [contenteditable]:focus {
             outline: none;
-            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5); /* Ring effect */
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5);
             border-radius: 4px;
         }
         #editable-title:empty::before {
             content: '[Click to Edit Title]';
             color: rgba(255, 255, 255, 0.4);
             font-style: italic;
-            pointer-events: none; /* Allow clicking through the placeholder */
+            pointer-events: none;
         }
         .button-label {
             max-width: 0;
@@ -63,65 +56,343 @@
             white-space: nowrap;
             overflow: hidden;
         }
-        .group:hover .button-label {
-            max-width: 100px;
-            opacity: 1;
+        .group:hover .button-label { max-width: 100px; opacity: 1; }
+        [dir="ltr"] .group:hover .button-label { margin-left: 0.5rem; }
+        [dir="rtl"] .group:hover .button-label { margin-right: 0.5rem; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: #a855f7; cursor: pointer; border-radius: 9999px; }
+        input[type=range]::-moz-range-thumb { width: 16px; height: 16px; background: #a855f7; cursor: pointer; border-radius: 9999px; border: 0;}
+        
+        /* --- VS Code Editor Theme --- */
+        #monacoEditorContainer {
+            background-color: #1e1e1e;
+        }
+
+        /* Monaco must stay LTR or it will vanish when parent is RTL */
+        #monacoEditorContainer,
+        #monacoEditorContainer .monaco-editor,
+        #monacoEditorContainer .monaco-editor .view-lines {
+            direction: ltr !important;
+            /* Added for correct caret behavior with RTL text inside LTR container */
+            unicode-bidi: plaintext;
+        }
+
+        /* Ensure editor control buttons are clickable and on top */
+        #advancedModePanel .flex-shrink-0 button,
+        #advancedModePanel .flex-shrink-0 label {
+            pointer-events: auto !important;
+            z-index: 20; 
+        }
+
+        /* --- Kinetic Word Effects (triggered by .is-highlighted) --- */
+        .is-highlighted.fx-shake { animation: shake 0.5s; }
+        .is-highlighted.fx-pulse { animation: pulse 0.8s; }
+        .is-highlighted.fx-wave span { display: inline-block; animation: wave-letter 1.2s ease-in-out; }
+        .is-highlighted.fx-zoom-in { animation: zoom-in 0.4s ease-out; }
+        .is-highlighted.fx-slide-up { animation: slide-up 0.5s ease-out; }
+        .is-highlighted.fx-glitch { animation: glitch 0.4s; }
+        .is-highlighted.fx-fade-in { animation: fade-in 0.5s ease-out; }
+        
+        /* Title hierarchy with decreasing prominence */
+        .is-highlighted.fx-title1 { 
+            animation: fade-in-drop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            font-size: 1.8em !important;
+            font-weight: 900 !important;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.05em;
+        }
+        .is-highlighted.fx-title2 { 
+            animation: fade-in-slide 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            font-size: 1.4em !important;
+            font-weight: 700 !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .is-highlighted.fx-title3 { 
+            animation: fade-in-gentle 0.4s ease-out both;
+            font-size: 1.2em !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .is-highlighted.fx-subline { position: relative; } 
+        .is-highlighted.fx-subline::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 100%;
+            height: 2px;
+            background: #a855f7;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: grow-line 0.5s forwards;
+        }
+        .is-highlighted.fx-glow { animation: glow 1.5s ease-in-out; }
+        .fx-image-slow-zoom-in { animation: slow-zoom-in forwards; }
+        .typing-cursor {
+            display: inline-block;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+          20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+        }
+        @keyframes wave-letter {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes zoom-in {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(3px, -3px); }
+            60% { transform: translate(-3px, -3px); }
+            80% { transform: translate(3px, 3px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fade-in-drop {
+          0% { transform: translateY(-20px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fade-in-slide {
+          0% { transform: translateX(-15px); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fade-in-gentle {
+          0% { transform: translateY(-8px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes grow-line {
+            to { transform: scaleX(1); }
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #a855f7, 0 0 20px #a855f7; }
+            to { text-shadow: 0 0 10px #fff, 0 0 20px #f472b6, 0 0 30px #f472b6, 0 0 40px #f472b6; }
+        }
+        @keyframes slow-zoom-in {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .monaco-editor .hidden-line {
+            display: none;
+        }
+        .monaco-editor .current-cue-highlight {
+            background-color: rgba(168, 85, 247, 0.15);
+            width: 100%;
+            display: block;
         }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
     
-    <!-- Dynamic background canvas -->
     <canvas id="backgroundCanvas" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
-
-    <div class="player-container flex flex-col w-full max-w-lg aspect-square bg-black/30 backdrop-blur-2xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/10">
-        <h1 id="editable-title" contenteditable="true" class="flex-shrink-0 text-xl sm:text-2xl font-bold text-center p-1 mb-4">PodViewer</h1>
-        
-        <!-- Subtitles Container -->
-        <div class="relative flex-grow w-full bg-black/20 rounded-lg overflow-hidden mb-6">
-             <!-- Centered Subtitle Line -->
-            <div class="absolute inset-0 flex items-center justify-center p-4 text-2xl sm:text-3xl font-bold text-center leading-tight">
-                 <p id="subtitle-line" class="transition-opacity duration-300">Upload an audio and subtitle file to begin.</p>
+    
+    <div class="flex items-center justify-center w-full max-w-7xl h-full gap-4">
+        <!-- Advanced Mode Editor Panel -->
+        <div id="advancedModePanel" class="editor-wrapper h-[512px] bg-[#1e1e1e] rounded-2xl shadow-2xl flex-col transition-all duration-500 ease-in-out -translate-x-full w-0 shrink-0 hidden">
+            <div class="flex-shrink-0 flex justify-between items-center p-3 border-b border-gray-700">
+                   <h3 class="text-lg font-bold text-gray-300">Advanced VTT Editor</h3>
+                   <div class="flex items-center gap-2">
+                     <label for="editorImageUpload" title="Upload Image" class="p-2 rounded-full hover:bg-white/10 text-gray-400 cursor-pointer">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                     </label>
+                     <input type="file" id="editorImageUpload" accept="image/*,image/gif" class="hidden" />
+                     <button id="pasteImageBtn" title="Paste Image" class="p-2 rounded-full hover:bg-white/10 text-gray-400">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                     </button>
+                     <button id="closeAdvancedMode" class="p-2 rounded-full hover:bg-white/10 text-gray-400">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                     </button>
+                   </div>
             </div>
-            
-            <!-- Branding inside the subtitle area -->
-            <p class="absolute bottom-4 left-4 text-base font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent p-1">PodViewer</p>
-            <p contenteditable="true" class="absolute bottom-4 right-4 text-sm font-bold opacity-70 p-1 text-right">Podcast by: Your Name</p>
+            <div id="monacoEditorContainer" class="flex-grow w-full h-full"></div>
         </div>
 
-        <!-- Controls and File Uploads -->
-        <div class="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2 sm:gap-4">
-                <button id="resetBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/></svg>
-                    <span class="button-label ml-0 group-hover:ml-2">Reset</span>
-                </button>
-                 <button id="playPauseBtn" class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed flex-shrink-0">
-                    <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                </button>
-                <div id="timeDisplay" class="font-mono text-sm text-gray-300 w-28 text-center">00:00 / 00:00</div>
-            </div>
-            <div class="flex items-center gap-3">
-                <input type="file" id="audio-upload" accept=".mp3, .wav, .ogg" class="hidden">
-                <label for="audio-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" y1="5" x2="22" y2="5"/><line x1="19" y1="2" x2="19" y2="8"/><path d="M10 12v6"/><path d="M7 12v6"/><path d="M13 12v6"/><path d="m16 17-3-3-3 3"/></svg>
-                    <span class="button-label ml-0 group-hover:ml-2">Audio</span>
-                </label>
+        <div id="player-wrapper" class="player-wrapper w-full max-w-lg shrink-0">
+            <div class="player-container flex flex-col w-full aspect-square bg-black/30 backdrop-blur-2xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+                <h1 id="editable-title" contenteditable="true" class="flex-shrink-0 text-xl sm:text-2xl font-bold text-center p-1">PodViewer</h1>
+                
+                <div class="relative flex-grow w-full bg-black/20 rounded-lg overflow-hidden my-4">
+                    <div id="subtitle-container" class="absolute inset-0 flex items-center justify-center p-4 font-bold leading-tight">
+                         <p id="subtitle-line" class="transition-opacity duration-300 flex flex-wrap gap-x-2 gap-y-4 items-center justify-center">Upload an audio and subtitle file to begin.</p>
+                    </div>
+                     <div id="image-container" class="absolute inset-0 p-4 flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
+                         <img id="cue-image" src="" class="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
+                    </div>
+                    <p id="brand-podviewer" class="absolute bottom-4 left-4 text-base font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent p-1 transition-opacity duration-300">PodViewer</p>
+                    <p id="brand-podcastby" contenteditable="true" class="absolute bottom-4 right-4 text-sm font-bold opacity-70 p-1 text-right transition-opacity duration-300">Podcast by: Your Name</p>
+                </div>
 
-                <input type="file" id="subtitle-upload" accept=".vtt" class="hidden">
-                <label for="subtitle-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-6.5 0-10.13 4.43-10.9 5.5C1.87 11.63 5.5 16 12 16s10.13-4.43 10.9-5.5C22.13 9.43 18.5 5 12 5Z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
-                    <span class="button-label ml-0 group-hover:ml-2">Subtitles</span>
-                </label>
+                <div id="controls-container" dir="ltr">
+                    <div id="progressBarContainer" class="w-full h-2 bg-white/10 rounded-full cursor-pointer my-2">
+                        <div id="progressBar" class="h-full bg-purple-500 rounded-full"></div>
+                    </div>
+                    <div class="flex-shrink-0 flex items-center justify-between gap-4 mt-2">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <button id="resetBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/></svg>
+                                <span class="button-label">Reset</span>
+                            </button>
+                             <button id="playPauseBtn" class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed flex-shrink-0">
+                                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                            </button>
+                            <div id="timeDisplay" class="font-mono text-sm text-gray-300 w-28 text-center">00:00 / 00:00</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label for="audio-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" y1="5" x2="22" y2="5"/><line x1="19" y1="2" x2="19" y2="8"/><path d="M10 12v6"/><path d="M7 12v6"/><path d="M13 12v6"/><path d="m16 17-3-3-3 3"/></svg>
+                                <span class="button-label">Audio</span>
+                            </label>
+                            <input type="file" id="audio-upload" accept=".mp3, .wav, .ogg" class="hidden">
+
+                            <label for="subtitle-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-6.5 0-10.13 4.43-10.9 5.5C1.87 11.63 5.5 16 12 16s10.13-4.43 10.9-5.5C22.13 9.43 18.5 5 12 5Z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+                                <span class="button-label">Subtitles</span>
+                            </label>
+                            <input type="file" id="subtitle-upload" accept=".vtt" class="hidden">
+                            
+                            <button id="settingsBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <audio id="audioPlayer" class="hidden"></audio>
             </div>
         </div>
-
-        <audio id="audioPlayer" class="hidden"></audio>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div dir="ltr" class="bg-gray-800/80 backdrop-blur-lg p-6 rounded-2xl w-full max-w-sm border border-white/10 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Live Settings</h2>
+                <button id="closeSettingsBtn" class="p-2 rounded-full hover:bg-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="space-y-6">
+                   <div class="flex justify-between items-center">
+                     <label for="advancedModeToggle" class="block text-sm font-medium">Advanced Mode</label>
+                     <button id="advancedModeToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="false">
+                         <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                     </button>
+                 </div>
+                 <div class="flex justify-between items-center">
+                     <label for="focusModeToggle" class="block text-sm font-medium">Editor Focus Mode</label>
+                     <button id="focusModeToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="false">
+                         <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                     </button>
+                 </div>
+                   <div class="flex justify-between items-center">
+                     <label for="kineticToggle" class="block text-sm font-medium">Kinetic Effects</label>
+                     <button id="kineticToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="true">
+                         <span class="sr-only">Use setting</span>
+                         <span aria-hidden="true" class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                     </button>
+                 </div>
+                   <div class="flex justify-between items-center">
+                     <label for="imageToggle" class="block text-sm font-medium">Show Images</label>
+                     <button id="imageToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="true">
+                         <span class="sr-only">Use setting</span>
+                         <span aria-hidden="true" class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                     </button>
+                 </div>
+                 <div class="flex justify-between items-center">
+                     <label for="rtlToggle" class="block text-sm font-medium">RTL Mode (for Arabic)</label>
+                     <button id="rtlToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="false">
+                         <span class="sr-only">Use setting</span>
+                         <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                     </button>
+                 </div>
+                 <div>
+                     <label for="highlightOffset" class="block text-sm font-medium mb-2">Highlight Timing Offset (<span id="highlightOffsetText">0.00s</span>)</label>
+                     <input id="highlightOffset" type="range" min="-0.5" max="0.5" step="0.05" value="0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                 </div>
+                 <div>
+                     <label for="highlightPacing" class="block text-sm font-medium mb-2">Highlight Pacing (<span id="highlightPacingText">1.00x</span>)</label>
+                     <input id="highlightPacing" type="range" min="0.5" max="2.0" step="0.05" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                 </div>
+                 <div>
+                     <label for="fontSelect" class="block text-sm font-medium mb-2">Font Style</label>
+                     <select id="fontSelect" class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2.5">
+                         <option>Inter</option>
+                         <option>Poppins</option>
+                         <option value="'Roboto Slab', serif">Roboto Slab</option>
+                         <option value="'Playfair Display', serif">Playfair Display</option>
+                         <option value="'IBM Plex Sans Arabic', sans-serif">IBM Plex Sans Arabic</option>
+                     </select>
+                 </div>
+                 <div>
+                     <label for="fontSize" class="block text-sm font-medium mb-2">Font Size (<span id="fontSizeText">30px</span>)</label>
+                     <input id="fontSize" type="range" min="20" max="60" step="1" value="30" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                 </div>
+                 <div>
+                     <label for="bgBlur" class="block text-sm font-medium mb-2">Background Blur (<span id="bgBlurText">80px</span>)</label>
+                     <input id="bgBlur" type="range" min="20" max="150" step="1" value="80" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js"></script>
     <script>
-        // DOM Element References
+    window.onload = function() {
+        // --- SETTINGS STATE ---
+        let settings = {
+            advancedModeEnabled: false,
+            focusModeEnabled: false,
+            kineticEnabled: true,
+            imagesEnabled: true,
+            rtlEnabled: false,
+            highlightOffset: 0,
+            highlightPacing: 1.0,
+            fontFamily: 'Inter',
+            fontSize: 30,
+            backgroundBlur: 80,
+        };
+
+        // --- MOOD PRESETS ---
+        const moodPresets = {
+            default: { palette: ['#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#3b82f6'], frequency: 0.95 },
+            angry: { palette: ['#991b1b', '#b91c1c', '#dc2626', '#ef4444', '#f87171'], frequency: 0.80 },
+            calm: { palette: ['#1e3a8a', '#1e40af', '#1d4ed8', '#2563eb', '#3b82f6'], frequency: 0.98 },
+            happy: { palette: ['#f59e0b', '#facc15', '#fde047', '#fef08a', '#fffbeb'], frequency: 0.90 },
+            sad: { palette: ['#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'], frequency: 0.99 },
+        };
+        let currentMood = moodPresets.default;
+        let rawVTTContent = 'WEBVTT\n\n00:00.000 --> 00:03.000\n<fx:title1>MAIN SECTION TITLE</fx:title1>\n\n00:03.000 --> 00:06.000\n<fx:title2>Subsection Title</fx:title2>\n\n00:06.000 --> 00:09.000\n<fx:title3>Minor Heading</fx:title3>\n\n00:09.000 --> 00:12.000\nRegular subtitle text\n\n00:12.000 --> 00:15.000\n<fx:typing>This text will type out letter by letter</fx:typing>';
+        let pastedImages = {};
+        let lastRevealedLine = -1;
+        let editorDecorations = [];
+        let activeCueForFocusMode = null;
+        let previousActiveCueId = null; // Track when active cue changes
+        let isUserTyping = false; // Track if user is currently editing
+        let typingTimeout = null; // Debounce typing updates
+
+        // --- DOM ELEMENT REFERENCES ---
+        const playerWrapper = document.getElementById('player-wrapper');
         const audioPlayer = document.getElementById('audioPlayer');
         const audioUpload = document.getElementById('audio-upload');
         const subtitleUpload = document.getElementById('subtitle-upload');
@@ -131,21 +402,109 @@
         const pauseIcon = document.getElementById('pauseIcon');
         
         const backgroundCanvas = document.getElementById('backgroundCanvas');
-        
+        const subtitleContainer = document.getElementById('subtitle-container');
         const subtitleLine = document.getElementById('subtitle-line');
+        const imageContainer = document.getElementById('image-container');
+        const cueImage = document.getElementById('cue-image');
         const timeDisplay = document.getElementById('timeDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const controlsContainer = document.getElementById('controls-container');
+        const brandPodviewer = document.getElementById('brand-podviewer');
+        const brandPodcastBy = document.getElementById('brand-podcastby');
+        const advancedModePanel = document.getElementById('advancedModePanel');
+        const monacoEditorContainer = document.getElementById('monacoEditorContainer');
+        const closeAdvancedModeBtn = document.getElementById('closeAdvancedMode');
+        const editorImageUploadInput = document.getElementById('editorImageUpload');
+        const pasteImageBtn = document.getElementById('pasteImageBtn'); // New: Paste Image Button
         
+        // Settings Modal Elements
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const advancedModeToggle = document.getElementById('advancedModeToggle');
+        const focusModeToggle = document.getElementById('focusModeToggle');
+        const kineticToggle = document.getElementById('kineticToggle');
+        const imageToggle = document.getElementById('imageToggle');
+        const rtlToggle = document.getElementById('rtlToggle');
+        const highlightOffsetSlider = document.getElementById('highlightOffset');
+        const highlightOffsetText = document.getElementById('highlightOffsetText');
+        const highlightPacingSlider = document.getElementById('highlightPacing');
+        const highlightPacingText = document.getElementById('highlightPacingText');
+        const fontSelect = document.getElementById('fontSelect');
+        const fontSizeSlider = document.getElementById('fontSize');
+        const fontSizeText = document.getElementById('fontSizeText');
+        const bgBlurSlider = document.getElementById('bgBlur');
+        const bgBlurText = document.getElementById('bgBlurText');
+
         // Audio & Subtitle State
         let audioContext;
         let analyser;
         let source;
         let subtitles = [];
         let isReadyToPlay = false;
+        let monacoEditor;
 
         const backgroundCtx = backgroundCanvas.getContext('2d');
         
+        // --- New helper functions for VTT serialization ---
+        function formatTime(seconds) {
+            // Helper function to format seconds into HH:MM:SS.mmm (or MM:SS.mmm if hours are zero)
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+            const ms = Math.floor((remainingSeconds - Math.floor(remainingSeconds)) * 1000);
+            const s = Math.floor(remainingSeconds);
+
+            let parts = [];
+            if (hours > 0) {
+                parts.push(hours.toString().padStart(2, '0'));
+            }
+            parts.push(minutes.toString().padStart(2, '0'));
+            parts.push(s.toString().padStart(2, '0'));
+
+            return `${parts.join(':')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function serializeVTT(cues) {
+            // Serializes the internal `subtitles` array back into a VTT string.
+            // This is crucial for ensuring that edits made in the editor (especially in focus mode)
+            // are correctly persisted back into the `rawVTTContent`.
+            let vtt = 'WEBVTT\n\n';
+            cues.forEach(cue => {
+                // Add timestamps
+                vtt += `${formatTime(cue.start)} --> ${formatTime(cue.end)}\n`;
+                
+                // Check if originalText already contains mood tags to prevent duplication
+                const moodRegex = /<mood:[^>]+>/;
+                const hasMoodTag = moodRegex.test(cue.originalText);
+                
+                let cueTextParts = [];
+                
+                // Only add mood tag if it doesn't already exist in originalText and mood data exists
+                if (!hasMoodTag && cue.mood && cue.mood.name) {
+                    let moodTag = `<mood:${cue.mood.name}`;
+                    if (cue.mood.frequency !== null && cue.mood.frequency !== undefined) {
+                        moodTag += `,${cue.mood.frequency}`;
+                    }
+                    moodTag += `>`;
+                    cueTextParts.push(moodTag);
+                }
+
+                // Append the originalText from the cue, as this is the canonical source
+                // which has been updated by the editor in focus mode.
+                // We're deliberately using cue.originalText here because it holds the raw VTT segment
+                // that might contain custom tags, which should be preserved.
+                cueTextParts.push(cue.originalText);
+                
+                vtt += cueTextParts.join(' ').trim() + '\n\n'; // Join parts with space and add double newline for next cue
+            });
+            return vtt.trim(); // Trim any trailing newlines at the end of the VTT
+        }
+
         // --- 1. FILE UPLOAD AND PREPARATION ---
         audioUpload.addEventListener('change', (event) => {
+            console.log("Audio file selected.");
             const file = event.target.files[0];
             if (file) {
                 const objectUrl = URL.createObjectURL(file);
@@ -156,11 +515,16 @@
         });
 
         subtitleUpload.addEventListener('change', (event) => {
+            console.log("Subtitle file selected.");
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    subtitles = parseVTT(e.target.result);
+                    rawVTTContent = e.target.result;
+                    if(monacoEditor) {
+                        monacoEditor.setValue(rawVTTContent);
+                    }
+                    subtitles = parseVTTWithEffects(rawVTTContent);
                     if (subtitles.length > 0) {
                         subtitleLine.textContent = 'Subtitles loaded. Ready to play!';
                     } else {
@@ -181,8 +545,8 @@
             }
         }
         
-        // --- 2. SUBTITLE PARSING (.VTT) ---
-        function parseVTT(vttContent) {
+        // --- 2. SUBTITLE PARSING WITH EFFECTS ---
+        function parseVTTWithEffects(vttContent) {
             const lines = vttContent.replace(/\r\n/g, '\n').split('\n');
             const cues = [];
             let i = 0;
@@ -190,24 +554,16 @@
                 if(!timeStr) return 0;
                 const parts = timeStr.split(':');
                 let seconds = 0;
-                if (parts.length === 3) {
-                    seconds += parseFloat(parts[0]) * 3600;
-                    seconds += parseFloat(parts[1]) * 60;
-                    seconds += parseFloat(parts[2]);
-                } else if (parts.length === 2) {
-                    seconds += parseFloat(parts[0]) * 60;
-                    seconds += parseFloat(parts[1]);
-                }
+                if (parts.length === 3) { seconds += parseFloat(parts[0]) * 3600; seconds += parseFloat(parts[1]) * 60; seconds += parseFloat(parts[2]); } 
+                else if (parts.length === 2) { seconds += parseFloat(parts[0]) * 60; seconds += parseFloat(parts[1]); }
                 return seconds;
             };
 
             while(i < lines.length) {
-                if (lines[i].trim() === '' || lines[i].includes('WEBVTT')) {
-                    i++;
-                    continue;
-                }
+                if (lines[i].trim() === '' || lines[i].includes('WEBVTT')) { i++; continue; }
                 const timeMatch = lines[i].match(/(\d{2}:)?\d{2}:\d{2}\.\d{3} --> (\d{2}:)?\d{2}:\d{2}\.\d{3}/);
                 if (timeMatch) {
+                    const cueLineNumber = i + 1; // Store original line number for editor highlighting
                     const [startTime, endTime] = lines[i].split(' --> ');
                     const start = timeToSeconds(startTime);
                     const end = timeToSeconds(endTime);
@@ -217,7 +573,70 @@
                         text += (text ? ' ' : '') + lines[i].trim();
                         i++;
                     }
-                    cues.push({ start, end, text });
+                    
+                    const moodRegex = /<mood:([^>]+)>/;
+                    const moodMatch = text.match(moodRegex);
+                    let mood = null;
+                    let processedText = text; // Text after removing mood tag for further parsing
+
+                    if(moodMatch) {
+                        processedText = text.replace(moodRegex, '').trim();
+                        const [moodName, frequency] = moodMatch[1].split(',');
+                        mood = { 
+                            name: moodName.trim(), 
+                            frequency: frequency ? parseFloat(frequency) : null 
+                        };
+                    }
+                    
+                    const finalWords = [];
+                    // Regex to capture either <c:color>text</c> or <fx:effect>text</fx> or <img:src,fx:effect>
+                    const regex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1>|<(img):([^>]+)>/g;
+                    let lastIndex = 0;
+                    let wordMatch;
+                    
+                    while ((wordMatch = regex.exec(processedText)) !== null) {
+                        // Add any plain text before the current tag
+                        if (wordMatch.index > lastIndex) {
+                            const plainText = processedText.substring(lastIndex, wordMatch.index);
+                            plainText.trim().split(' ').filter(w => w).forEach(word => {
+                                finalWords.push({ type: 'text', text: word, effects: {} });
+                            });
+                        }
+                        if (wordMatch[1]) { // Matched <tag:value>content</tag>
+                            const [, tagType, tagValue, tagContent] = wordMatch;
+                            const effects = {};
+                            if (tagType === 'c') effects.color = tagValue;
+                            else if (tagType === 'fx') {
+                                effects.animation = tagValue;
+                                console.log(`Parsed fx effect: ${tagValue} for content: "${tagContent}"`);
+                            }
+                            tagContent.trim().split(' ').filter(w => w).forEach(word => {
+                                finalWords.push({ type: 'text', text: word, effects: effects });
+                            });
+                        } else if (wordMatch[4]) { // Matched <img:src,fx:effect>
+                            const parts = wordMatch[5].split(',');
+                            const src = parts[0].trim();
+                            const effects = {};
+                            if(parts[1]) {
+                                const fxPart = parts[1].trim();
+                                if(fxPart.startsWith('fx:')) {
+                                    effects.animation = fxPart.substring(3);
+                                }
+                            }
+                            finalWords.push({ type: 'image', src: src, effects: effects });
+                        }
+                        lastIndex = regex.lastIndex;
+                    }
+
+                    // Add any remaining plain text after the last tag
+                    if (lastIndex < processedText.length) {
+                        const plainText = processedText.substring(lastIndex);
+                        plainText.trim().split(' ').filter(w => w).forEach(word => {
+                            finalWords.push({ type: 'text', text: word, effects: {} });
+                        });
+                    }
+
+                    cues.push({ start, end, words: finalWords, mood: mood, lineNumber: cueLineNumber, originalText: text });
                 } else {
                     i++;
                 }
@@ -238,13 +657,12 @@
         }
 
         let particles = [];
-        const colors = ['#a855f7', '#ec4899', '#22c55e', '#f59e0b', '#3b82f6'];
 
         function drawDynamicBackground() {
-            if (!analyser) return; // Don't draw if analyser isn't ready
+            if (!analyser) return; 
             const { width, height } = backgroundCanvas;
             backgroundCtx.clearRect(0, 0, width, height);
-            backgroundCtx.filter = 'blur(80px)';
+            backgroundCtx.filter = `blur(${settings.backgroundBlur}px)`;
             
             const bufferLength = analyser.frequencyBinCount;
             const frequencyData = new Uint8Array(bufferLength);
@@ -252,16 +670,16 @@
 
             const bass = frequencyData.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
             const mids = frequencyData.slice(10, 40).reduce((a, b) => a + b, 0) / 30;
-
-            if (particles.length < 15 && Math.random() > 0.95) {
-                 particles.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * 1,
-                    vy: (Math.random() - 0.5) * 1,
-                    radius: 50 + Math.random() * 100,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                 });
+            
+            if (particles.length < 15 && Math.random() > currentMood.frequency) {
+                   particles.push({
+                     x: Math.random() * width,
+                     y: Math.random() * height,
+                     vx: (Math.random() - 0.5) * 1,
+                     vy: (Math.random() - 0.5) * 1,
+                     radius: 50 + Math.random() * 100,
+                     color: currentMood.palette[Math.floor(Math.random() * currentMood.palette.length)],
+                   });
             }
             
             particles.forEach((p, i) => {
@@ -272,7 +690,6 @@
                 if (p.x - p.radius > width || p.x + p.radius < 0 || p.y - p.radius > height || p.y + p.radius < 0) {
                     particles.splice(i, 1);
                 }
-
                 backgroundCtx.beginPath();
                 backgroundCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 backgroundCtx.fillStyle = p.color;
@@ -282,40 +699,203 @@
             backgroundCtx.filter = 'none';
         }
 
-        // Main animation loop
         function animatePlayer() {
             requestAnimationFrame(animatePlayer);
-            if (audioPlayer.paused) return; // Pause animation if audio is paused
+            if (audioPlayer.paused) return; 
             drawDynamicBackground();
         }
 
-        // --- 4. PLAYBACK CONTROLS & SYNC ---
+        // --- 4. PLAYBACK & SETTINGS CONTROLS ---
         playPauseBtn.addEventListener('click', () => {
+            console.log("Play/Pause button clicked.");
             if (!isReadyToPlay) return;
             if (!audioContext) setupAudioContext();
             if (audioContext.state === 'suspended') audioContext.resume();
             audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
         });
         
-        resetBtn.addEventListener('click', () => {
-            audioPlayer.currentTime = 0;
+        resetBtn.addEventListener('click', () => { 
+            console.log("Reset button clicked.");
+            audioPlayer.currentTime = 0; 
         });
+        settingsBtn.addEventListener('click', () => {
+            console.log("Settings button clicked.");
+            settingsModal.classList.remove('hidden');
+        });
+        closeSettingsBtn.addEventListener('click', () => {
+            console.log("Close Settings button clicked.");
+            settingsModal.classList.add('hidden');
+        });
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                console.log("Clicked outside settings modal.");
+                settingsModal.classList.add('hidden');
+            }
+        });
+        
+        progressBarContainer.addEventListener('click', function(e) {
+            console.log("Progress bar clicked.");
+            if (!audioPlayer.duration) return;
+            
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            
+            // Check if we're in RTL mode
+            const isRTL = settings.rtlEnabled || document.body.dir === 'rtl' || controlsContainer.dir === 'rtl';
+            
+            let percentage;
+            if (isRTL) {
+                // In RTL mode, calculate from right edge
+                percentage = (width - x) / width;
+            } else {
+                // In LTR mode, calculate from left edge (normal)
+                percentage = x / width;
+            }
+            
+            // Ensure percentage is within bounds
+            percentage = Math.max(0, Math.min(1, percentage));
+            
+            console.log(`Progress bar click: ${isRTL ? 'RTL' : 'LTR'} mode, x=${x}, width=${width}, percentage=${percentage.toFixed(3)}`);
+            
+            audioPlayer.currentTime = audioPlayer.duration * percentage;
+        });
+
+        advancedModeToggle.addEventListener('click', () => {
+            console.log("Advanced Mode toggle clicked.");
+            settings.advancedModeEnabled = !settings.advancedModeEnabled;
+            updateToggleUI(advancedModeToggle, settings.advancedModeEnabled);
+            toggleAdvancedMode(settings.advancedModeEnabled);
+        });
+
+        closeAdvancedModeBtn.addEventListener('click', () => {
+            console.log("Close Advanced Mode button clicked.");
+               settings.advancedModeEnabled = false;
+               updateToggleUI(advancedModeToggle, false);
+               toggleAdvancedMode(false);
+        });
+        
+        function toggleAdvancedMode(enabled) {
+            if (enabled) {
+                advancedModePanel.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    playerWrapper.classList.remove('w-full', 'max-w-lg');
+                    playerWrapper.classList.add('w-1/2', 'max-w-none');
+                    advancedModePanel.classList.remove('w-0','-translate-x-full');
+                    advancedModePanel.classList.add('w-1/2', 'flex');
+                    
+                    updateMonacoEditorContent(); // Ensure editor content is correct on opening
+                    if(monacoEditor) monacoEditor.focus();
+                });
+                settingsModal.classList.add('hidden');
+            } else {
+                // When disabling advanced mode, explicitly update the editor to show the full VTT
+                // derived from the potentially modified rawVTTContent.
+                if (monacoEditor) {
+                    monacoEditor.setValue(rawVTTContent); // Ensure editor has full content when exiting focus mode
+                }
+
+                playerWrapper.classList.add('w-full', 'max-w-lg');
+                playerWrapper.classList.remove('w-1/2', 'max-w-none');
+                advancedModePanel.classList.add('-translate-x-full','w-0');
+                advancedModePanel.classList.remove('w-1/2','flex');
+                setTimeout(() => {
+                   if (!settings.advancedModeEnabled) {
+                        advancedModePanel.classList.add('hidden');
+                   }
+                }, 500);
+            }
+        }
+        
+        focusModeToggle.addEventListener('click', () => {
+               console.log("Focus Mode toggle clicked.");
+               
+               // Save any pending changes before switching modes
+               if (isUserTyping) {
+                   isUserTyping = false;
+                   if (typingTimeout) {
+                       clearTimeout(typingTimeout);
+                   }
+               }
+               
+               settings.focusModeEnabled = !settings.focusModeEnabled;
+               updateToggleUI(focusModeToggle, settings.focusModeEnabled);
+               
+               // Force update of editor content after mode change
+               setTimeout(() => {
+                   updateMonacoEditorContent();
+               }, 50); // Small delay to ensure UI has updated
+        });
+
+        kineticToggle.addEventListener('click', () => {
+            console.log("Kinetic Effects toggle clicked.");
+            settings.kineticEnabled = !settings.kineticEnabled;
+            updateToggleUI(kineticToggle, settings.kineticEnabled);
+            updateSubtitles();
+        });
+
+        imageToggle.addEventListener('click', () => {
+            console.log("Show Images toggle clicked.");
+            settings.imagesEnabled = !settings.imagesEnabled;
+            updateToggleUI(imageToggle, settings.imagesEnabled);
+            updateSubtitles();
+        });
+
+        rtlToggle.addEventListener('click', () => {
+            console.log("RTL Mode toggle clicked.");
+            settings.rtlEnabled = !settings.rtlEnabled;
+            applyRtlMode();
+            updateToggleUI(rtlToggle, settings.rtlEnabled);
+            if(settings.rtlEnabled){
+                fontSelect.value = "'IBM Plex Sans Arabic', sans-serif";
+            } else {
+                fontSelect.value = "Inter";
+            }
+            settings.fontFamily = fontSelect.value;
+            subtitleContainer.style.fontFamily = settings.fontFamily;
+            updateMonacoEditorContent(); // Update editor content when RTL is toggled
+        });
+
+        highlightOffsetSlider.addEventListener('input', (e) => {
+            settings.highlightOffset = parseFloat(e.target.value);
+            highlightOffsetText.textContent = `${settings.highlightOffset.toFixed(2)}s`;
+        });
+        highlightPacingSlider.addEventListener('input', (e) => {
+            settings.highlightPacing = parseFloat(e.target.value);
+            highlightPacingText.textContent = `${settings.highlightPacing.toFixed(2)}x`;
+        });
+        fontSelect.addEventListener('change', (e) => {
+            settings.fontFamily = e.target.value;
+            subtitleContainer.style.fontFamily = settings.fontFamily;
+        });
+        fontSizeSlider.addEventListener('input', (e) => {
+            settings.fontSize = parseInt(e.target.value);
+            fontSizeText.textContent = `${settings.fontSize}px`;
+            subtitleContainer.style.fontSize = `${settings.fontSize}px`;
+        });
+        bgBlurSlider.addEventListener('input', (e) => {
+            settings.backgroundBlur = parseInt(e.target.value);
+            bgBlurText.textContent = `${settings.backgroundBlur}px`;
+        });
+
 
         audioPlayer.onplay = () => {
             playIcon.classList.add('hidden');
             pauseIcon.classList.remove('hidden');
-            animatePlayer(); // Start animation on play
+            animatePlayer();
         };
-
         audioPlayer.onpause = () => {
             playIcon.classList.remove('hidden');
             pauseIcon.classList.add('hidden');
         };
-        
         audioPlayer.onloadedmetadata = () => updateTimeDisplay();
         audioPlayer.ontimeupdate = () => {
             updateTimeDisplay();
             updateSubtitles();
+            if(audioPlayer.duration) {
+                const percentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
         };
         
         function updateTimeDisplay() {
@@ -331,38 +911,307 @@
         function updateSubtitles() {
             if (!subtitles.length) return;
             const currentTime = audioPlayer.currentTime;
-            
             const currentCue = subtitles.find(cue => currentTime >= cue.start && currentTime <= cue.end);
+            
+            // Create a unique ID for the current cue to track changes
+            const currentCueId = currentCue ? `${currentCue.start}-${currentCue.end}` : null;
+            const activeCueChanged = currentCueId !== previousActiveCueId;
+            
+            // Always keep track of the active cue for focus mode
+            activeCueForFocusMode = currentCue;
+
+            // Update Monaco editor content only when advanced mode is enabled and when necessary
+            if (monacoEditor && settings.advancedModeEnabled) {
+                // Only update editor if active cue changed or if not in focus mode
+                if (activeCueChanged || !settings.focusModeEnabled) {
+                    updateMonacoEditorContent();
+                }
+            }
+
+            // Update the previous cue ID for next comparison
+            previousActiveCueId = currentCueId;
 
             if (currentCue) {
-                const words = currentCue.text.split(' ');
-                const cueDuration = currentCue.end - currentCue.start;
-                
-                if (cueDuration <= 0) {
-                     subtitleLine.innerHTML = `<span class="text-highlight">${currentCue.text}</span>`;
-                     return;
+                if(currentCue.mood) {
+                    const preset = moodPresets[currentCue.mood.name] || moodPresets.default;
+                    currentMood = {
+                        palette: preset.palette,
+                        frequency: currentCue.mood.frequency !== null ? currentCue.mood.frequency : preset.frequency
+                    };
                 }
 
-                const timeIntoCue = currentTime - currentCue.start;
-                const progressInCue = timeIntoCue / cueDuration;
-
-                let highlightIndex = Math.floor(progressInCue * words.length);
-                highlightIndex = Math.min(highlightIndex, words.length - 1);
+                const hasImage = currentCue.words.some(w => w.type === 'image');
                 
-                const styledText = words.map((word, index) => {
-                    const className = index === highlightIndex ? 'text-highlight' : 'text-dim';
-                    return `<span class="${className}">${word}</span>`;
-                }).join(' ');
+                brandPodviewer.style.opacity = hasImage ? '0' : '1';
+                brandPodcastBy.style.opacity = hasImage ? '0' : '0.7';
 
-                subtitleLine.innerHTML = styledText;
+                if (hasImage && settings.imagesEnabled) {
+                    subtitleContainer.style.opacity = '0';
+                    const imageData = currentCue.words.find(w => w.type === 'image');
+                    const imageSrc = pastedImages[imageData.src] || imageData.src;
+                    if (imageData && cueImage.src !== imageSrc) {
+                           cueImage.src = imageSrc;
+                    }
+                    imageContainer.style.opacity = '1';
+                    
+                    cueImage.className = 'max-w-full max-h-full object-contain rounded-lg shadow-lg';
+                    if(settings.kineticEnabled && imageData.effects && imageData.effects.animation) {
+                        cueImage.style.animationDuration = `${currentCue.end - currentCue.start}s`;
+                        cueImage.classList.add(`fx-image-${imageData.effects.animation}`);
+                    } else {
+                        cueImage.style.animationName = '';
+                    }
+
+                } else {
+                    imageContainer.style.opacity = '0';
+                    subtitleContainer.style.opacity = '1';
+
+                    const words = currentCue.words.filter(w => w.type === 'text');
+                    const cueDuration = currentCue.end - currentCue.start;
+                    
+                    if (cueDuration <= 0 || words.length === 0) {
+                        subtitleLine.innerHTML = words.map(w => w.text || '').join(' ');
+                        return;
+                    }
+
+                    // Check if any word has typing effect
+                    const hasTypingEffect = words.some(word => word.effects && word.effects.animation === 'typing');
+                    
+                    if (hasTypingEffect) {
+                        console.log("Typing effect detected for cue:", currentCue.originalText);
+                        console.log("Words with effects:", words.map(w => ({ text: w.text, effects: w.effects })));
+                        
+                        // Handle typing effect for entire cue
+                        const timeIntoCue = (currentTime - currentCue.start) + settings.highlightOffset;
+                        const progressRatio = Math.max(0, timeIntoCue / cueDuration);
+                        const pacedProgress = Math.pow(progressRatio, settings.highlightPacing);
+                        
+                        // Calculate total characters in the cue
+                        const fullText = words.map(w => w.text).join(' ');
+                        const totalChars = fullText.length;
+                        const charsToShow = Math.floor(pacedProgress * totalChars);
+                        
+                        console.log(`Typing progress: ${charsToShow}/${totalChars} chars (${(pacedProgress * 100).toFixed(1)}%)`);
+                        
+                        // Build the revealed text character by character
+                        let revealedText = '';
+                        let charCount = 0;
+                        let wordElements = [];
+                        
+                        for (let i = 0; i < words.length; i++) {
+                            const word = words[i];
+                            let wordContent = '';
+                            let wordStyle = '';
+                            let wordClasses = '';
+                            
+                            // Apply color effects if present
+                            if (settings.kineticEnabled && word.effects && word.effects.color) {
+                                wordStyle = `color: ${word.effects.color};`;
+                            }
+                            
+                            // Calculate how many characters of this word to show
+                            const wordStartChar = charCount;
+                            const wordEndChar = charCount + word.text.length;
+                            const spaceChar = i < words.length - 1 ? 1 : 0; // Add space except for last word
+                            
+                            if (charsToShow > wordStartChar) {
+                                const charsInThisWord = Math.min(charsToShow - wordStartChar, word.text.length);
+                                wordContent = word.text.substring(0, charsInThisWord);
+                                
+                                // Add typing cursor if we're in the middle of this word
+                                if (charsInThisWord < word.text.length && charsToShow >= wordStartChar && charsToShow < wordEndChar) {
+                                    wordContent += '<span class="typing-cursor">|</span>';
+                                }
+                            }
+                            
+                            if (wordContent) {
+                                wordElements.push(`<span class="${wordClasses}" style="${wordStyle}">${wordContent}</span>`);
+                            }
+                            
+                            charCount += word.text.length + spaceChar;
+                            
+                            // Add space if we've revealed it and this isn't the last word
+                            if (spaceChar && charsToShow > wordEndChar) {
+                                wordElements.push(' ');
+                            } else if (spaceChar && charsToShow === wordEndChar + 1) {
+                                // Show typing cursor at space position
+                                wordElements.push('<span class="typing-cursor">|</span>');
+                                break;
+                            }
+                        }
+                        
+                        subtitleLine.innerHTML = wordElements.join('');
+                    } else {
+                        // Handle normal effects (non-typing)
+                        const timeIntoCue = (currentTime - currentCue.start) + settings.highlightOffset;
+                        const progressRatio = Math.max(0, timeIntoCue / cueDuration);
+                        const pacedProgress = Math.pow(progressRatio, settings.highlightPacing);
+
+                        let highlightIndex = Math.floor(pacedProgress * words.length);
+                        highlightIndex = Math.min(Math.max(0, highlightIndex), words.length - 1);
+                        
+                        subtitleLine.innerHTML = words.map((word, index) => {
+                            const isHighlighted = index === highlightIndex;
+                            let style = '';
+                            let classes = isHighlighted ? 'is-highlighted' : 'text-dim';
+                            let content = word.text;
+
+                            if (settings.kineticEnabled && word.effects) {
+                                if(word.effects.color) {
+                                    style += `color: ${word.effects.color};`;
+                                }
+                                if(isHighlighted && word.effects.animation) {
+                                    if (word.effects.animation !== 'wave') {
+                                           classes += ` fx-${word.effects.animation}`;
+                                    }
+                                }
+                                
+                                if(isHighlighted && word.effects.animation === 'wave') {
+                                    classes += ` fx-wave`;
+                                    content = word.text.split('').map((char, charIndex) => 
+                                        `<span style="animation-delay: ${charIndex * 0.05}s">${char}</span>`
+                                    ).join('');
+                                }
+                            }
+
+                            return `<span class="${classes}" style="${style}">${content}</span>`;
+                        }).join(' ');
+                    }
+                }
             } else {
                 subtitleLine.innerHTML = '';
+                imageContainer.style.opacity = '0';
             }
+        }
+
+        // --- New function to update Monaco Editor content ---
+        function updateMonacoEditorContent() {
+            if (!monacoEditor || !settings.advancedModeEnabled) {
+                // If editor not initialized or advanced mode is off, do nothing
+                return;
+            }
+
+            // Don't update editor content if user is currently typing
+            if (isUserTyping) {
+                return;
+            }
+
+            // Set the editor's text direction based on settings.rtlEnabled
+            monacoEditor.getModel().setEOL(monaco.editor.EndOfLinePreference.LF); // Ensure consistent EOL
+            monacoEditor.updateOptions({ 'wordSeparators': settings.rtlEnabled ? ' \t\n\r"\'`~!@#$%^&*()-=+[{]}\\|;:,.<>/?' : null }); // Adjust word separators for RTL
+
+            if (settings.focusModeEnabled) {
+                let focusContent = "No active cue.";
+                if (activeCueForFocusMode) {
+                    focusContent = activeCueForFocusMode.originalText;
+                }
+                // Check if current value is different to avoid unnecessary updates and cursor jumps
+                if (monacoEditor.getValue() !== focusContent) {
+                    // Store cursor position before update
+                    const position = monacoEditor.getPosition();
+                    monacoEditor.setValue(focusContent);
+                    // Try to restore cursor position if it's still valid
+                    try {
+                        if (position && position.lineNumber <= monacoEditor.getModel().getLineCount()) {
+                            monacoEditor.setPosition(position);
+                        }
+                    } catch (e) {
+                        // If position restore fails, just put cursor at end
+                        monacoEditor.setPosition(monacoEditor.getModel().getFullModelRange().getEndPosition());
+                    }
+                    monacoEditor.setScrollPosition({ scrollTop: 0 });
+                    editorDecorations = monacoEditor.deltaDecorations(editorDecorations, []); // Clear highlights in focus mode
+                    lastRevealedLine = -1;
+                }
+            } else {
+                // Not in focus mode, show full VTT content
+                if (monacoEditor.getValue() !== rawVTTContent) {
+                    // Store cursor position before update
+                    const position = monacoEditor.getPosition();
+                    monacoEditor.setValue(rawVTTContent);
+                    // Try to restore cursor position if it's still valid
+                    try {
+                        if (position && position.lineNumber <= monacoEditor.getModel().getLineCount()) {
+                            monacoEditor.setPosition(position);
+                        }
+                    } catch (e) {
+                        // Position restore failed, keep default position
+                    }
+                }
+                // Highlight current cue in full VTT editor
+                if(activeCueForFocusMode && activeCueForFocusMode.lineNumber !== lastRevealedLine) {
+                    monacoEditor.revealLineInCenter(activeCueForFocusMode.lineNumber, monaco.editor.ScrollType.Smooth);
+                    editorDecorations = monacoEditor.deltaDecorations(editorDecorations, [{
+                        range: new monaco.Range(activeCueForFocusMode.lineNumber, 1, activeCueForFocusMode.lineNumber + 2, 1),
+                        options: { isWholeLine: true, className: 'current-cue-highlight', inlineClassName: 'bg-purple-500/20' }
+                    }]);
+                    lastRevealedLine = activeCueForFocusMode.lineNumber;
+                } else if (!activeCueForFocusMode) {
+                    editorDecorations = monacoEditor.deltaDecorations(editorDecorations, []);
+                    lastRevealedLine = -1;
+                }
+            }
+             // Ensure the editor's view is updated to reflect the new direction
+            monacoEditor.layout();
         }
         
         // --- 5. INITIALIZATION ---
+        function updateToggleUI(toggleElement, isEnabled){
+              const handle = toggleElement.querySelector('span:not(.sr-only)');
+              if (isEnabled) {
+                toggleElement.classList.remove('bg-gray-600');
+                toggleElement.classList.add('bg-purple-600');
+                handle.classList.add('translate-x-5');
+                handle.classList.remove('translate-x-0');
+            } else {
+                toggleElement.classList.add('bg-gray-600');
+                toggleElement.classList.remove('bg-purple-600');
+                handle.classList.remove('translate-x-5');
+                handle.classList.add('translate-x-0');
+            }
+        }
+
+        function applyRtlMode() {
+            const isRtl = settings.rtlEnabled;
+            subtitleContainer.dir = isRtl ? 'rtl' : 'ltr';
+            controlsContainer.dir = isRtl ? 'rtl' : 'ltr';
+
+            // NEW: Keep the editor panel LTR no matter what
+            advancedModePanel.setAttribute('dir', 'ltr');
+            monacoEditorContainer.style.direction = 'ltr'; // Ensure container itself is LTR
+
+            // (If you really must flip the whole <body>, do it *after*
+            // the two lines above, then call layout again:)
+            // document.body.dir = isRtl ? 'rtl' : 'ltr';
+
+            // Force a layout update after changing direction properties
+            if (monacoEditor) {
+                monacoEditor.layout();
+            }
+        }
+        
+        function initializeSettings() {
+            updateToggleUI(advancedModeToggle, settings.advancedModeEnabled);
+            updateToggleUI(focusModeToggle, settings.focusModeEnabled);
+            updateToggleUI(kineticToggle, settings.kineticEnabled);
+            updateToggleUI(imageToggle, settings.imagesEnabled);
+            updateToggleUI(rtlToggle, settings.rtlEnabled);
+            applyRtlMode();
+            highlightOffsetSlider.value = settings.highlightOffset;
+            highlightOffsetText.textContent = `${settings.highlightOffset.toFixed(2)}s`;
+            highlightPacingSlider.value = settings.highlightPacing;
+            highlightPacingText.textContent = `${settings.highlightPacing.toFixed(2)}x`;
+            fontSelect.value = settings.fontFamily;
+            subtitleContainer.style.fontFamily = settings.fontFamily;
+            fontSizeSlider.value = settings.fontSize;
+            fontSizeText.textContent = `${settings.fontSize}px`;
+            subtitleContainer.style.fontSize = `${settings.fontSize}px`;
+            bgBlurSlider.value = settings.backgroundBlur;
+            bgBlurText.textContent = `${settings.backgroundBlur}px`;
+        }
+        
         function resizeAllCanvases() {
-            const canvas = backgroundCanvas; // Only one canvas now
+            const canvas = backgroundCanvas;
             try {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = canvas.getBoundingClientRect();
@@ -372,9 +1221,311 @@
                 console.error("Error resizing canvas:", e);
             }
         }
+        
+        // --- MONACO EDITOR SETUP ---
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
+        window.MonacoEnvironment = {
+            getWorkerUrl: function (moduleId, label) {
+                // Ensure absolute paths for Monaco Editor workers
+                const cdnBase = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs';
+                if (label === 'json') return `${cdnBase}/language/json/json.worker.js`;
+                if (label === 'css' || label === 'scss' || label === 'less') return `${cdnBase}/language/css/css.worker.js`;
+                if (label === 'html' || label === 'handlebars' || label === 'razor') return `${cdnBase}/language/html/html.worker.js`;
+                if (label === 'typescript' || label === 'javascript') return `${cdnBase}/language/typescript/ts.worker.js`;
+                return `${cdnBase}/editor/editor.worker.js`;
+            }
+        };
+
+        require(['vs/editor/editor.main'], function() {
+            monaco.editor.defineTheme('podviewer-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '6a9955' }, 
+                    { token: 'metatag', foreground: 'c586c0' }, 
+                    { token: 'tag', foreground: '4ec9b0' },
+                    { token: 'attribute.name', foreground: '9cdcfe' },
+                    { token: 'attribute.value', foreground: 'ce9178' },
+                ],
+                colors: {
+                    'editor.background': '#1e1e1e'
+                }
+            });
+            
+            monacoEditor = monaco.editor.create(monacoEditorContainer, {
+                value: rawVTTContent,
+                language: 'plaintext',
+                theme: 'podviewer-dark',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                wordWrap: 'on',
+                padding: { top: 16, bottom: 16 },
+                scrollbar: {
+                    vertical: 'auto',
+                    horizontal: 'auto'
+                }
+            });
+
+            monacoEditor.onDidChangeModelContent(() => {
+                // Mark that user is typing
+                isUserTyping = true;
+                
+                // Clear any existing timeout
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                }
+
+                // Set timeout to mark typing as finished after user stops typing
+                typingTimeout = setTimeout(() => {
+                    isUserTyping = false;
+                }, 500); // 500ms delay after last keystroke
+
+                if (settings.focusModeEnabled) {
+                    if (activeCueForFocusMode) {
+                        // Get the *edited* text from the focus mode editor
+                        const newCueText = monacoEditor.getValue();
+
+                        // Only update if the text actually changed
+                        if (activeCueForFocusMode.originalText !== newCueText) {
+                            // Update the originalText for the currently active cue object in the subtitles array
+                            activeCueForFocusMode.originalText = newCueText;
+
+                            // Only reconstruct and re-parse if we need to update other parts of the system
+                            // For immediate visual feedback, we can parse just this cue
+                            const tempVTT = `WEBVTT\n\n${formatTime(activeCueForFocusMode.start)} --> ${formatTime(activeCueForFocusMode.end)}\n${newCueText}`;
+                            const tempCues = parseVTTWithEffects(tempVTT);
+                            
+                            if (tempCues.length > 0) {
+                                // Update the words and mood for the current cue without full re-parsing
+                                activeCueForFocusMode.words = tempCues[0].words;
+                                activeCueForFocusMode.mood = tempCues[0].mood;
+                            }
+
+                            // Defer the full VTT reconstruction to reduce frequency
+                            clearTimeout(window.vttUpdateTimeout);
+                            window.vttUpdateTimeout = setTimeout(() => {
+                                rawVTTContent = serializeVTT(subtitles);
+                                // Only do full re-parse if not currently typing
+                                if (!isUserTyping) {
+                                    subtitles = parseVTTWithEffects(rawVTTContent);
+                                }
+                            }, 250); // Debounce VTT updates
+
+                            // Call updateSubtitles immediately for visual feedback in the player
+                            // But don't update the editor content since we're in the middle of editing
+                            const wasUserTyping = isUserTyping;
+                            updateSubtitles();
+                            isUserTyping = wasUserTyping; // Restore typing state
+                        }
+                    }
+                } else {
+                    // If not in focus mode, the editor holds the entire VTT content
+                    const newVTTContent = monacoEditor.getValue();
+                    if (rawVTTContent !== newVTTContent) {
+                        rawVTTContent = newVTTContent;
+                        
+                        // Debounce full re-parsing for efficiency
+                        clearTimeout(window.fullParseTimeout);
+                        window.fullParseTimeout = setTimeout(() => {
+                            subtitles = parseVTTWithEffects(rawVTTContent);
+                            const wasUserTyping = isUserTyping;
+                            updateSubtitles();
+                            isUserTyping = wasUserTyping; // Restore typing state
+                        }, 300);
+                    }
+                }
+            });
+            
+            editorImageUploadInput.addEventListener('change', (e) => {
+                console.log("Upload Image input change detected.");
+                if (e.target.files.length === 0) {
+                    console.log("Image upload cancelled or no file selected.");
+                    return;
+                }
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64data = event.target.result;
+                    const imageName = `uploaded_image_${Date.now()}.${file.name.split('.').pop()}`;
+                    pastedImages[imageName] = base64data; // Store base64 data for image display
+                    
+                    const imageTag = `<img:${imageName}>`;
+
+                    const position = monacoEditor.getPosition();
+                    monacoEditor.executeEdits('insert-image', [{
+                        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                        text: imageTag,
+                        forceMoveMarkers: true
+                    }]);
+                    console.log(`Image uploaded: ${imageName}. Tag inserted.`);
+                    // After inserting text, onDidChangeModelContent will handle the update to subtitles/rawVTTContent
+                    updateSubtitles(); // Trigger player update immediately
+                };
+                reader.readAsDataURL(file);
+                e.target.value = ''; // Clear input to allow re-uploading the same file
+            });
+
+            // New: Event listener for paste button with robust fallbacks
+            pasteImageBtn.addEventListener('click', async () => {
+                console.log("Paste Image button clicked.");
+                if (!monacoEditor) return;
+
+                // Check if we're in a secure context first
+                const isSecureContext = window.isSecureContext || location.protocol === 'https:';
+                
+                if (!isSecureContext) {
+                    console.warn("Not in secure context - clipboard API limited");
+                    showPasteInstructions();
+                    return;
+                }
+
+                try {
+                    // Try modern Clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.read) {
+                        console.log("Using modern Clipboard API");
+                        const clipboardItems = await navigator.clipboard.read();
+                        
+                        for (const clipboardItem of clipboardItems) {
+                            const imageTypes = clipboardItem.types.filter(type => type.startsWith('image/'));
+                            
+                            if (imageTypes.length > 0) {
+                                const imageType = imageTypes[0];
+                                const blob = await clipboardItem.getType(imageType);
+                                await processImageBlob(blob, imageType);
+                                return;
+                            }
+                        }
+                        
+                        showNoImageMessage();
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Modern Clipboard API failed:", error);
+                }
+
+                // Fallback to legacy approach
+                showPasteInstructions();
+            });
+
+            // Helper function to show paste instructions
+            function showPasteInstructions() {
+                console.log("Using manual paste instruction method");
+                
+                // Create a more visible notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
+                notification.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    </svg>
+                    <span>Click in the editor below, then press <strong>Ctrl+V</strong> (or <strong>Cmd+V</strong>) to paste image</span>
+                    <button onclick="this.parentElement.remove()" class="ml-2 text-white/80 hover:text-white">✕</button>
+                `;
+                document.body.appendChild(notification);
+                
+                // Focus the editor
+                monacoEditor.focus();
+                
+                // Auto-remove notification after 8 seconds
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 8000);
+            }
+
+            // Helper function to show no image message
+            function showNoImageMessage() {
+                console.log("No image found in clipboard.");
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
+                notification.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <path d="M12 9v4"/>
+                        <path d="m12 17 .01 0"/>
+                    </svg>
+                    <span>No image found in clipboard. Copy an image first!</span>
+                    <button onclick="this.parentElement.remove()" class="ml-2 text-white/80 hover:text-white">✕</button>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 4000);
+            }
+
+            // Helper function to process image blob
+            async function processImageBlob(blob, imageType) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64data = e.target.result;
+                    const imageName = `pasted_image_${Date.now()}.${imageType.split('/')[1]}`;
+                    pastedImages[imageName] = base64data;
+                    
+                    const position = monacoEditor.getPosition();
+                    monacoEditor.executeEdits('insert-image', [{
+                        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                        text: `<img:${imageName}>`,
+                        forceMoveMarkers: true
+                    }]);
+                    
+                    console.log(`Image pasted successfully: ${imageName}`);
+                    showSuccessMessage();
+                    updateSubtitles();
+                };
+                reader.readAsDataURL(blob);
+            }
+
+            // Helper function to show success message
+            function showSuccessMessage() {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
+                notification.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>Image pasted successfully!</span>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 3000);
+            }
+
+            // New: Universal paste event listener for the editor container (for Ctrl+V / Cmd+V)
+            monacoEditorContainer.addEventListener('paste', (event) => {
+                console.log("Paste event detected on editor container.");
+                const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+                let imageFound = false;
+                
+                for (const item of items) {
+                    if (item.kind === 'file' && item.type.startsWith('image/')) {
+                        event.preventDefault(); // Prevent default paste behavior for images
+                        imageFound = true;
+                        const blob = item.getAsFile();
+                        processImageBlob(blob, item.type);
+                        break;
+                    }
+                }
+                
+                if (!imageFound) {
+                    console.log("Paste event: No image found or non-image content pasted.");
+                }
+            });
+
+        });
+        
         window.addEventListener('resize', resizeAllCanvases);
         resizeAllCanvases();
-
+        initializeSettings();
+    }
     </script>
 </body>
 </html>
