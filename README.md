@@ -1,7 +1,3 @@
-Of course! Based on the provided code, here is a comprehensive `README.md` file for the PodViewer project.
-
----
-
 # PodViewer 🎧✨
 
 **A dynamic, browser-based player for creating captivating audiograms with kinetic typography, image overlays, and audio-reactive visuals. All from a single HTML file.**
