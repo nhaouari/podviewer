@@ -68,7 +68,54 @@ Wrap a word or phrase in an `<fx:...>` tag to apply a specific animation when it
 This text will <fx:pulse>pulse</fx:pulse> and this will <fx:shake>shake</fx:shake>.
 ```
 
-**Available Effects:** `shake`, `pulse`, `wave`, `zoom-in`, `slide-up`, `glitch`, `fade-in`, `glow`, `subline`.
+**Available Effects:** `shake`, `pulse`, `wave`, `zoom-in`, `slide-up`, `glitch`, `fade-in`, `glow`, `subline`, `burst`, `rgb-glitch`, `laser`, `reveal-circle`, `confetti`, `wave-mask`.
+
+### Advanced Effects
+
+**Particle Burst:** Creates an explosion of particles around the text.
+```vtt
+00:00:10.000 --> 00:00:12.000
+<fx:burst>BOOM!</fx:burst>
+```
+
+**RGB Glitch:** Retro CRT-style color separation effect.
+```vtt
+00:00:13.000 --> 00:00:15.000
+<fx:rgb-glitch>ERROR 404</fx:rgb-glitch>
+```
+
+**Emoji Rain:** Custom emoji falling effect with optional intensity.
+```vtt
+00:00:16.000 --> 00:00:19.000
+<fx:emoji-rain:🔥>Hot take!</fx:emoji-rain:🔥>
+
+00:00:20.000 --> 00:00:23.000
+<fx:emoji-rain:😂,0.5>Funny moment</fx:emoji-rain:😂,0.5>
+```
+
+**Laser Highlight:** Neon beam that sweeps under text.
+```vtt
+00:00:24.000 --> 00:00:26.000
+<fx:laser>Target acquired</fx:laser>
+```
+
+**Circular Reveal:** Text unmasks from center outward.
+```vtt
+00:00:27.000 --> 00:00:29.000
+<fx:reveal-circle>Surprise!</fx:reveal-circle>
+```
+
+**Confetti Cannon:** Launches colorful confetti particles.
+```vtt
+00:00:30.000 --> 00:00:32.000
+<fx:confetti>Celebration!</fx:confetti>
+```
+
+**Waveform Mask:** Text fills with animated waveform pattern.
+```vtt
+00:00:33.000 --> 00:00:35.000
+<fx:wave-mask>Audio visualized</fx:wave-mask>
+```
 
 ### Title & Heading Effects
 
@@ -111,6 +158,34 @@ Use the `<img:...>` tag to display an image or GIF. The subtitle text will be hi
   00:00:37.000 --> 00:00:42.000
   <img:my_image.jpg,fx:slow-zoom-in>
   ```
+
+### New Image Effects
+
+**Parallax Pan:** Slow horizontal movement that matches cue duration.
+```vtt
+00:00:43.000 --> 00:00:48.000
+<img:landscape.jpg,fx:parallax>
+```
+
+**Edge Pop:** Positions image in corner with glow effect (perfect for reaction GIFs).
+```vtt
+00:00:49.000 --> 00:00:52.000
+<img:reaction.gif,fx:edge>
+```
+
+### Background Scene Control `<bg:...>`
+
+Change the entire background scene for dramatic effect.
+
+```vtt
+00:00:53.000 --> 00:00:58.000
+<bg:matrix>Welcome to the Matrix.
+
+00:00:59.000 --> 00:01:04.000
+<bg:retro-grid>Back to the 80s!
+```
+
+**Available Scenes:** `matrix` (scrolling green code), `retro-grid` (neon grid pattern).
 
 ### Controlling Background Mood `<mood:...>`
 

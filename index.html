@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;700&family=Inter:wght@400;700&family=Playfair+Display:wght@700&family=Poppins:wght@500&family=Roboto+Slab:wght@400&family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -91,6 +92,202 @@
         .is-highlighted.fx-slide-up { animation: slide-up 0.5s ease-out; }
         .is-highlighted.fx-glitch { animation: glitch 0.4s; }
         .is-highlighted.fx-fade-in { animation: fade-in 0.5s ease-out; }
+        
+        /* --- NEW EFFECTS FROM IDEAS.MD --- */
+        .is-highlighted.fx-burst { 
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        .is-highlighted.fx-burst::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: currentColor;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: particle-burst 0.6s ease-out forwards;
+            box-shadow: 
+                0 0 0 0 currentColor,
+                10px 5px 0 0 currentColor,
+                -8px 12px 0 0 currentColor,
+                15px -10px 0 0 currentColor,
+                -12px -8px 0 0 currentColor,
+                20px 0px 0 0 currentColor,
+                -15px 0px 0 0 currentColor;
+        }
+        
+        .is-highlighted.fx-rgb-glitch { 
+            animation: rgb-glitch 0.4s ease-in-out;
+        }
+        
+        .is-highlighted.fx-emoji-rain {
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        .is-highlighted.fx-emoji-rain::before {
+            content: '🔥';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            width: 2px;
+            height: 2px;
+            color: transparent;
+            font-size: 20px;
+            animation: emoji-storm-1 3s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 
+                -100px 0 0 0 currentColor, -80px 0 0 0 currentColor, -60px 0 0 0 currentColor, -40px 0 0 0 currentColor, -20px 0 0 0 currentColor,
+                0px 0 0 0 currentColor, 20px 0 0 0 currentColor, 40px 0 0 0 currentColor, 60px 0 0 0 currentColor, 80px 0 0 0 currentColor, 100px 0 0 0 currentColor,
+                -90px 20px 0 0 currentColor, -70px 20px 0 0 currentColor, -50px 20px 0 0 currentColor, -30px 20px 0 0 currentColor, -10px 20px 0 0 currentColor,
+                10px 20px 0 0 currentColor, 30px 20px 0 0 currentColor, 50px 20px 0 0 currentColor, 70px 20px 0 0 currentColor, 90px 20px 0 0 currentColor,
+                -110px 40px 0 0 currentColor, -85px 40px 0 0 currentColor, -65px 40px 0 0 currentColor, -45px 40px 0 0 currentColor, -25px 40px 0 0 currentColor,
+                -5px 40px 0 0 currentColor, 15px 40px 0 0 currentColor, 35px 40px 0 0 currentColor, 55px 40px 0 0 currentColor, 75px 40px 0 0 currentColor, 95px 40px 0 0 currentColor;
+        }
+        .is-highlighted.fx-emoji-rain::after {
+            content: '🔥';
+            position: absolute;
+            top: -70px;
+            left: 50%;
+            width: 2px;
+            height: 2px;
+            color: transparent;
+            font-size: 18px;
+            animation: emoji-storm-2 3.5s linear infinite 1s;
+            pointer-events: none;
+            z-index: 9;
+            box-shadow: 
+                -95px 10px 0 0 currentColor, -75px 10px 0 0 currentColor, -55px 10px 0 0 currentColor, -35px 10px 0 0 currentColor, -15px 10px 0 0 currentColor,
+                5px 10px 0 0 currentColor, 25px 10px 0 0 currentColor, 45px 10px 0 0 currentColor, 65px 10px 0 0 currentColor, 85px 10px 0 0 currentColor,
+                -105px 30px 0 0 currentColor, -80px 30px 0 0 currentColor, -60px 30px 0 0 currentColor, -40px 30px 0 0 currentColor, -20px 30px 0 0 currentColor,
+                0px 30px 0 0 currentColor, 20px 30px 0 0 currentColor, 40px 30px 0 0 currentColor, 60px 30px 0 0 currentColor, 80px 30px 0 0 currentColor, 100px 30px 0 0 currentColor,
+                -115px 50px 0 0 currentColor, -90px 50px 0 0 currentColor, -70px 50px 0 0 currentColor, -50px 50px 0 0 currentColor, -30px 50px 0 0 currentColor,
+                -10px 50px 0 0 currentColor, 10px 50px 0 0 currentColor, 30px 50px 0 0 currentColor, 50px 50px 0 0 currentColor, 70px 50px 0 0 currentColor, 90px 50px 0 0 currentColor;
+        }
+        
+        /* Universal emoji rain effect that works with any emoji via CSS custom properties */
+        .fx-emoji-rain-universal {
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        .fx-emoji-rain-universal::before,
+        .fx-emoji-rain-universal::after {
+            content: var(--emoji, '🔥');
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 20px;
+        }
+        .fx-emoji-rain-universal::before {
+            top: -30px;
+            animation: emoji-fall-1 2s linear infinite;
+        }
+        .fx-emoji-rain-universal::after {
+            top: -60px;
+            font-size: 18px;
+            animation: emoji-fall-2 2.5s linear infinite 0.5s;
+            z-index: 9;
+        }
+        
+        .is-highlighted.fx-laser {
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        .is-highlighted.fx-laser::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            animation: laser-sweep 0.8s ease-out forwards;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        
+        .is-highlighted.fx-reveal-circle {
+            animation: reveal-circle 0.6s ease-out forwards;
+            clip-path: circle(0% at center);
+        }
+        
+        .is-highlighted.fx-confetti {
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        .is-highlighted.fx-confetti::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            transform: translateX(-50%);
+            background: 
+                radial-gradient(circle at 20% 20%, #ff6b6b 2px, transparent 2px),
+                radial-gradient(circle at 80% 40%, #4ecdc4 2px, transparent 2px),
+                radial-gradient(circle at 40% 80%, #45b7d1 2px, transparent 2px),
+                radial-gradient(circle at 60% 20%, #f9ca24 2px, transparent 2px),
+                radial-gradient(circle at 20% 60%, #f0932b 2px, transparent 2px);
+            background-size: 20px 20px;
+            animation: confetti-burst 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .is-highlighted.fx-wave-mask {
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                currentColor 25%, 
+                transparent 50%, 
+                currentColor 75%, 
+                transparent 100%);
+            background-size: 200% 100%;
+            animation: wave-mask 1s ease-in-out infinite;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Image effects */
+        .fx-image-parallax { 
+            animation: parallax-pan var(--cue-duration, 3s) linear forwards; 
+        }
+        .fx-image-edge {
+            animation: edge-pop 0.5s ease-out forwards;
+            transform-origin: center;
+        }
+        /* NEW: image appears in the corner and gently bobs as if speaking */
+        .fx-image-edge-talk {
+            animation: edge-talk 1s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        @keyframes edge-talk {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+        
+        /* Background scene switches */
+        .bg-matrix {
+            background: 
+                linear-gradient(90deg, transparent 98%, #00ff00 100%),
+                linear-gradient(0deg, transparent 98%, #00ff00 100%);
+            background-size: 20px 20px;
+            animation: matrix-scroll 2s linear infinite;
+        }
+        .bg-retro-grid {
+            background: 
+                linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: retro-grid-glow 3s ease-in-out infinite alternate;
+        }
         
         /* Title hierarchy with decreasing prominence */
         .is-highlighted.fx-title1 { 
@@ -196,6 +393,159 @@
             from, to { opacity: 1; }
             50% { opacity: 0; }
         }
+        
+        /* --- NEW KEYFRAMES FOR IDEAS.MD EFFECTS --- */
+        @keyframes particle-burst {
+            0% { 
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes rgb-glitch {
+            0% { 
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+            20% { 
+                transform: translate(-2px, 1px);
+                filter: hue-rotate(90deg);
+            }
+            40% { 
+                transform: translate(2px, -1px);
+                filter: hue-rotate(180deg);
+            }
+            60% { 
+                transform: translate(-1px, 2px);
+                filter: hue-rotate(270deg);
+            }
+            80% { 
+                transform: translate(1px, -2px);
+                filter: hue-rotate(360deg);
+            }
+            100% { 
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+        }
+        
+        @keyframes emoji-storm-1 {
+            0% {
+                transform: translateY(-50px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(200px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes emoji-storm-2 {
+            0% {
+                transform: translateY(-70px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(220px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes laser-sweep {
+            0% { 
+                transform: scaleX(0);
+                opacity: 0;
+            }
+            50% { 
+                opacity: 1;
+            }
+            100% { 
+                transform: scaleX(1);
+                opacity: 0.3;
+            }
+        }
+        
+        @keyframes reveal-circle {
+            from { 
+                clip-path: circle(0% at center);
+            }
+            to { 
+                clip-path: circle(100% at center);
+            }
+        }
+        
+        @keyframes confetti-burst {
+            0% { 
+                transform: translateX(-50%) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% { 
+                transform: translateX(-50%) scale(0.8) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes wave-mask {
+            0% { 
+                background-position: -200% 0;
+            }
+            100% { 
+                background-position: 200% 0;
+            }
+        }
+        
+        @keyframes parallax-pan {
+            from { 
+                transform: translateX(0);
+            }
+            to { 
+                transform: translateX(-20px);
+            }
+        }
+        
+        @keyframes edge-pop {
+            0% { 
+                transform: scale(1);
+                filter: drop-shadow(0 0 0 rgba(168, 85, 247, 0));
+            }
+            50% { 
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.8));
+            }
+            100% { 
+                transform: scale(1);
+                filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.4));
+            }
+        }
+        
+        @keyframes matrix-scroll {
+            from { 
+                background-position: 0 0;
+            }
+            to { 
+                background-position: 0 20px;
+            }
+        }
+        
+        @keyframes retro-grid-glow {
+            from { 
+                background-color: rgba(0, 255, 255, 0.05);
+                filter: brightness(1);
+            }
+            to { 
+                background-color: rgba(0, 255, 255, 0.15);
+                filter: brightness(1.2);
+            }
+        }
+        
         .monaco-editor .hidden-line {
             display: none;
         }
@@ -203,6 +553,222 @@
             background-color: rgba(168, 85, 247, 0.15);
             width: 100%;
             display: block;
+        }
+
+        /* Ensure cue images always fill the subtitle area (unless overridden by a special effect) */
+        #cue-image {
+            width: 100%;
+            height: auto;
+            max-height: 100%; /* Never overflow vertically */
+            object-fit: contain;
+        }
+
+        @keyframes emoji-fall-1 {
+            0% { 
+                transform: translateX(-50%) translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateX(-50%) translateY(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        @keyframes emoji-fall-2 {
+            0% { 
+                transform: translateX(-50%) translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateX(-50%) translateY(120px) rotate(-360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Universal emoji rain effect - full background coverage */
+        .fx-emoji-rain-universal {
+            position: relative;
+            animation: fade-in 0.3s ease-out;
+        }
+        
+        /* Create full-screen emoji rain background */
+        .emoji-rain-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .emoji-rain-background::before,
+        .emoji-rain-background::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 30% 10%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 50% 30%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 70% 5%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 90% 25%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 15% 60%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 35% 70%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 55% 50%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 75% 80%, var(--emoji, '❤️') 0%, transparent 0%),
+                radial-gradient(circle at 95% 65%, var(--emoji, '❤️') 0%, transparent 0%);
+            background-size: 100px 100px;
+            font-size: 24px;
+            animation: emoji-rain-fall 3s linear infinite;
+        }
+        
+        .emoji-rain-background::after {
+            animation-delay: 1.5s;
+            animation-duration: 4s;
+            background-size: 80px 80px;
+        }
+        
+        /* Alternative approach using pseudo-elements with actual emoji content */
+        .emoji-rain-particles::before,
+        .emoji-rain-particles::after {
+            content: var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️') ' ' var(--emoji, '❤️');
+            position: fixed;
+            top: -50px;
+            left: 0;
+            width: 100vw;
+            height: 50px;
+            white-space: nowrap;
+            font-size: 24px;
+            line-height: 50px;
+            pointer-events: none;
+            z-index: 1;
+            animation: emoji-rain-fall 4s linear infinite;
+        }
+        
+        .emoji-rain-particles::after {
+            animation-delay: 2s;
+            animation-duration: 5s;
+            font-size: 20px;
+        }
+
+        @keyframes emoji-rain-fall {
+            0% { 
+                transform: translateY(-100vh);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        /* Emoji storm effect within subtitle container */
+        .emoji-storm-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px; /* Fixed height to cover subtitle area */
+            min-height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: visible; /* Allow particles to be visible */
+        }
+        
+        .emoji-storm-particle {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none;
+            animation: emoji-storm-fall ease-in-out infinite;
+            opacity: 0.9;
+        }
+        
+        .emoji-storm-particle:nth-child(2n) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-size: 20px;
+        }
+        
+        .emoji-storm-particle:nth-child(3n) {
+            animation-duration: 0.6s;
+            animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+            font-size: 28px;
+        }
+        
+        .emoji-storm-particle:nth-child(4n) {
+            animation-duration: 0.5s;
+            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-size: 22px;
+        }
+        
+        .emoji-storm-particle:nth-child(5n) {
+            animation-duration: 0.3s;
+            animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+            font-size: 26px;
+        }
+        
+        .emoji-storm-particle:nth-child(6n) {
+            animation-duration: 0.7s;
+            animation-timing-function: ease-in-out;
+            font-size: 18px;
+        }
+        
+        .emoji-storm-particle:nth-child(7n) {
+            animation-duration: 0.45s;
+            animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-size: 30px;
+        }
+        
+        .emoji-storm-particle:nth-child(8n) {
+            animation-duration: 0.55s;
+            animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 16px;
+        }
+        
+        .emoji-storm-particle:nth-child(9n) {
+            animation-duration: 0.35s;
+            animation-timing-function: cubic-bezier(0.39, 0.575, 0.565, 1);
+            font-size: 24px;
+        }
+        
+        .emoji-storm-particle:nth-child(10n) {
+            animation-duration: 0.65s;
+            animation-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+            font-size: 32px;
+        }
+
+        @keyframes emoji-storm-fall {
+            0% { 
+                transform: translateY(-40px) translateX(0px) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+                transform: translateY(-20px) translateX(1px) rotate(45deg) scale(1);
+            }
+            30% {
+                transform: translateY(40px) translateX(3px) rotate(90deg) scale(1.1);
+                opacity: 0.9;
+            }
+            60% {
+                transform: translateY(120px) translateX(-2px) rotate(180deg) scale(0.9);
+                opacity: 0.7;
+            }
+            85% {
+                transform: translateY(180px) translateX(4px) rotate(270deg) scale(1.05);
+                opacity: 0.4;
+            }
+            100% { 
+                transform: translateY(220px) translateX(0px) rotate(360deg) scale(0.7);
+                opacity: 0;
+            }
+        }
+
+        /* Ensure subtitle container can contain positioned storm effects */
+        .subtitle-container {
+            position: relative;
         }
     </style>
 </head>
@@ -217,14 +783,14 @@
                    <h3 class="text-lg font-bold text-gray-300">Advanced VTT Editor</h3>
                    <div class="flex items-center gap-2">
                      <label for="editorImageUpload" title="Upload Image" class="p-2 rounded-full hover:bg-white/10 text-gray-400 cursor-pointer">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                         <i data-lucide="upload" class="w-[18px] h-[18px]"></i>
                      </label>
                      <input type="file" id="editorImageUpload" accept="image/*,image/gif" class="hidden" />
                      <button id="pasteImageBtn" title="Paste Image" class="p-2 rounded-full hover:bg-white/10 text-gray-400">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                         <i data-lucide="clipboard" class="w-[18px] h-[18px]"></i>
                      </button>
                      <button id="closeAdvancedMode" class="p-2 rounded-full hover:bg-white/10 text-gray-400">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                         <i data-lucide="x" class="w-[18px] h-[18px]"></i>
                      </button>
                    </div>
             </div>
@@ -254,30 +820,30 @@
                     <div class="flex-shrink-0 flex items-center justify-between gap-4 mt-2">
                         <div class="flex items-center gap-2 sm:gap-4">
                             <button id="resetBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/></svg>
+                                <i data-lucide="rotate-ccw" class="w-[18px] h-[18px]"></i>
                                 <span class="button-label">Reset</span>
                             </button>
                              <button id="playPauseBtn" class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed flex-shrink-0">
-                                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                                <i id="playIcon" data-lucide="play" class="w-6 h-6"></i>
+                                <i id="pauseIcon" data-lucide="pause" class="w-6 h-6 hidden"></i>
                             </button>
                             <div id="timeDisplay" class="font-mono text-sm text-gray-300 w-28 text-center">00:00 / 00:00</div>
                         </div>
                         <div class="flex items-center gap-3">
                             <label for="audio-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" y1="5" x2="22" y2="5"/><line x1="19" y1="2" x2="19" y2="8"/><path d="M10 12v6"/><path d="M7 12v6"/><path d="M13 12v6"/><path d="m16 17-3-3-3 3"/></svg>
+                                <i data-lucide="music" class="w-[18px] h-[18px]"></i>
                                 <span class="button-label">Audio</span>
                             </label>
                             <input type="file" id="audio-upload" accept=".mp3, .wav, .ogg" class="hidden">
 
                             <label for="subtitle-upload" class="group flex items-center p-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 cursor-pointer transition-all duration-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-6.5 0-10.13 4.43-10.9 5.5C1.87 11.63 5.5 16 12 16s10.13-4.43 10.9-5.5C22.13 9.43 18.5 5 12 5Z"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+                                <i data-lucide="captions" class="w-[18px] h-[18px]"></i>
                                 <span class="button-label">Subtitles</span>
                             </label>
                             <input type="file" id="subtitle-upload" accept=".vtt" class="hidden">
                             
                             <button id="settingsBtn" class="group flex items-center p-3 bg-white/10 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                                 <i data-lucide="settings" class="w-[18px] h-[18px]"></i>
                             </button>
                         </div>
                     </div>
@@ -293,10 +859,13 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold">Live Settings</h2>
                 <button id="closeSettingsBtn" class="p-2 rounded-full hover:bg-white/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div class="space-y-6">
+              <details open class="mb-2">
+                <summary class="font-semibold cursor-pointer py-2">Modes</summary>
+                <div class="pl-4 space-y-4">
                    <div class="flex justify-between items-center">
                      <label for="advancedModeToggle" class="block text-sm font-medium">Advanced Mode</label>
                      <button id="advancedModeToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="false">
@@ -309,6 +878,18 @@
                          <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                      </button>
                  </div>
+                  <div class="flex justify-between items-center">
+                    <label for="demoModeToggle" class="block text-sm font-medium">Demo Mode (Show All Effects)</label>
+                    <button id="demoModeToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="false">
+                      <span class="sr-only">Use setting</span>
+                      <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                    </button>
+                  </div>
+                </div>
+              </details>
+              <details class="mb-2">
+                <summary class="font-semibold cursor-pointer py-2">Effects</summary>
+                <div class="pl-4 space-y-4">
                    <div class="flex justify-between items-center">
                      <label for="kineticToggle" class="block text-sm font-medium">Kinetic Effects</label>
                      <button id="kineticToggle" type="button" class="bg-gray-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800" role="switch" aria-checked="true">
@@ -330,6 +911,11 @@
                          <span aria-hidden="true" class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                      </button>
                  </div>
+                </div>
+              </details>
+              <details class="mb-2">
+                <summary class="font-semibold cursor-pointer py-2">Appearance</summary>
+                <div class="pl-4 space-y-4">
                  <div>
                      <label for="highlightOffset" class="block text-sm font-medium mb-2">Highlight Timing Offset (<span id="highlightOffsetText">0.00s</span>)</label>
                      <input id="highlightOffset" type="range" min="-0.5" max="0.5" step="0.05" value="0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
@@ -356,6 +942,8 @@
                      <label for="bgBlur" class="block text-sm font-medium mb-2">Background Blur (<span id="bgBlurText">80px</span>)</label>
                      <input id="bgBlur" type="range" min="20" max="150" step="1" value="80" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
                  </div>
+                </div>
+              </details>
             </div>
         </div>
     </div>
@@ -370,6 +958,7 @@
             kineticEnabled: true,
             imagesEnabled: true,
             rtlEnabled: false,
+            demoModeEnabled: false,
             highlightOffset: 0,
             highlightPacing: 1.0,
             fontFamily: 'Inter',
@@ -386,7 +975,7 @@
             sad: { palette: ['#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'], frequency: 0.99 },
         };
         let currentMood = moodPresets.default;
-        let rawVTTContent = 'WEBVTT\n\n00:00:00.000 --> 00:01.300\n<fx:title1>One year ago,</fx:title1>\n\n00:01.300 --> 00:06.000\none year ago, <fx:pulse>Apple Inc</fx:pulse> attempted a <fx:shake>hostile rebrand</fx:shake> of the letters AI,\n\n00:06.000 --> 00:10.000\nby changing it from Artificial Intelligence to <fx:glow>Apple Intelligence</fx:glow>.\n\n00:10.500 --> 00:12.500\nRegular subtitle text\n\n00:12.500 --> 00:18.000\nbut <fx:shake>ultimately</fx:shake> the move failed when we learned that AI is just... <fx:glitch>Actual Indians</fx:glitch>.';
+        let rawVTTContent = 'WEBVTT\n\n00:00.378 --> 00:01.198\n<fx:title1>The Setup</fx:title1>\n\n00:01.198 --> 00:2.558\nThis setup, the setting scene.\n\n00:02.558 --> 00:4.658\nPicture this, June 2025.\n\n00:04.658 --> 00:6.728\nOpenAI drops a <fx:burst>bombshell</fx:burst>.\n\n00:06.728 --> 00:13.168\nO3 Pro, their shiny new AI, and an 80% price slash for the standard O3 model.\n\n00:13.168 --> 00:15.938\nThey\'re about to <fx:pulse>dominate</fx:pulse> the AI game forever.\n\n00:15.938 --> 00:17.978\nOr so they thought.\n\n00:17.978 --> 00:19.688\n<fx:title1>The Big Promise</fx:title1>\n\n00:19.688 --> 00:25.048\nO3 Pro, smarter reasoning, slick tools, and O3 now <fx:glow>dirt cheap</fx:glow>.\n\n00:25.048 --> 00:28.988\nO3 Pro promises <fx:laser>PhD level</fx:laser> problem solving,\n\n00:28.988 --> 00:33.438\nwhile O3\'s price drops from $100 to $2 per million tokens.\n\n00:33.438 --> 00:36.468\nAccessible, powerful, <fx:wave>revolutionary</fx:wave>.\n\n00:36.468 --> 00:38.258\nX users lose their minds.\n\n00:38.258 --> 00:40.458\n<img:https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExazJ0NjN1a3p5ZDI4N3l0aWI1MXR3Z2x2a2QwZHAwN3F6Z2llaGZ0MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6pJNYBYSMFod2/giphy.gif,fx:slow-zoom-in>\n\n00:40.458 --> 00:41.978\n<fx:title1>The Harsh Reality</fx:title1>\n\n00:41.978 --> 00:43.708\n<mood:angry>Launch day hits.\n\n00:43.708 --> 00:45.898\nUsers on X <fx:shake>cry foul</fx:shake>.\n\n00:45.898 --> 00:48.718\nIs the cheaper O3 just a <fx:rgb-glitch>dumber version</fx:rgb-glitch>?\n\n00:48.718 --> 00:53.488\nGreat. We get a budget AI that\'s fast but <fx:shake>flops</fx:shake> on tough tasks.\n\n00:53.488 --> 00:55.338\nClassic OpenAI move.\n\n00:55.338 --> 00:57.288\n<img:https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmJzbXhqc3VrNzIyMXdvdTdrcnp5dGNjM2MycG8xOHd6Y2xkbG5zdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/NTur7XlVDUdqM/giphy.gif,fx:slow-zoom-in>\n\n00:57.288 --> 00:58.588\n<fx:title1>The Plot Twist</fx:title1>\n\n00:58.588 --> 01:00.418\n<mood:default>But wait, there\'s more.\n\n01:00.418 --> 01:03.958\nTech sleuths on X dig into the price cut.\n\n01:03.958 --> 01:09.118\nThey suspect OpenAI is <fx:laser>slashing compute</fx:laser> to save cash, not help users.\n\n01:09.118 --> 01:15.548\nAnd O3 Pro costs $80 per million tokens, <fx:burst>40 times pricier</fx:burst>.\n\n01:15.548 --> 01:17.448\n<img:https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Zkd3l1bjMzN2h3MWdudjRmZHFyZXV2c3p4NG41cjllcXQxbnE5cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5aLrlDiJPMPFS/giphy.gif,fx:slow-zoom-in>\n\n01:17.448 --> 01:19.498\n<fx:title1>The Community Strikes Back</fx:title1>\n\n01:19.498 --> 01:21.848\n<mood:happy>X <fx:confetti>explodes with shade</fx:confetti>.\n\n01:21.848 --> 01:25.598\n#O3pricecut <fx:wave>trends worldwide</fx:wave>.\n\n01:25.598 --> 01:28.598\nUsers demand proof O3 isn\'t nerfed.\n\n01:28.598 --> 01:31.798\nSam Altman stays <fx:fade-in>silent</fx:fade-in>, tweeting memes instead.\n\n01:31.798 --> 01:33.498\n<img:https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMG90NnR4ZngweHkwbXI2dmV5c2N6eHFzM2luYm80aXlybTZta2RteiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/RILsqUte1MME7TzQJ9/giphy.gif,fx:slow-zoom-in>\n\n01:33.498 --> 01:35.398\n<fx:title1>The Deeper Conspiracy</fx:title1>\n\n01:35.398 --> 01:37.318\n<mood:sad><fx:typing>Here\'s the real kicker.</fx:typing>\n\n01:37.318 --> 01:39.878\n<fx:reveal-circle>Leaked benchmarks</fx:reveal-circle> surface on X.\n\n01:39.878 --> 01:41.528\nExplosive reveal.\n\n01:41.528 --> 01:46.068\nO3 Pro\'s hyped reasoning, <fx:rgb-glitch>riddled with errors</fx:rgb-glitch> for some tasks.\n\n01:46.068 --> 01:51.588\nPhilosophical, is OpenAI just flooding the market to <fx:shake>crush Google and Anthropic?</fx:shake>\n\n01:51.588 --> 01:53.308\n<fx:title1>The Hero\'s Journey</fx:title1>\n\n01:53.308 --> 01:55.518\n<mood:happy>But the X community <fx:pulse>fights back</fx:pulse>.\n\n01:55.518 --> 01:57.418\n<img:https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTRhM3V1MmVqcGU1c2d0Y2dwOHdqcGVnYTM3OXV3cDk2OG9yaDZxOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/S6qkS0ETvel6EZat45/giphy.gif,fx:slow-zoom-in>\n\n01:57.418 --> 02:01.378\nDevelopers test O3 Pro, share workarounds for its quirks.\n\n02:01.378 --> 02:06.018\nTriumphant, <fx:glow>real AI progress</fx:glow> driven by users, not hype.\n\n02:06.018 --> 02:08.688\nNo corporate gatekeeping required.\n\n02:08.688 --> 02:10.018\n<fx:title1>The Resolution</fx:title1>\n\n02:10.018 --> 02:11.398\n<mood:default>A week later.\n\n02:11.398 --> 02:15.708\nOpenAI promises clarifications on O3\'s performance.\n\n02:15.708 --> 02:18.068\nWe learned to question the hype.\n\n02:18.068 --> 02:20.918\nThe truth always surfaces on X.\n\n02:20.918 --> 02:22.568\n<fx:title1>The Moral of the Story</fx:title1>\n\n02:22.568 --> 02:27.738\nSometimes the biggest promises hide the <fx:shake>shadiest moves</fx:shake>.\n\n02:27.738 --> 02:30.678\nDon\'t trust the AI hype machine.\n\n02:30.678 --> 02:31.958\nThanks for watching.\n\n02:31.958 --> 02:33.728\nYou stayed for the whole drama.\n\n02:33.728 --> 02:36.568\nDrop your OpenAI horror stories below.\n\n02:36.568 --> 02:38.838\nSubscribe for more tech tea.';
         let pastedImages = {};
         let lastRevealedLine = -1;
         let editorDecorations = [];
@@ -395,6 +984,21 @@
         let isUserTyping = false; // Track if user is currently editing
         let typingTimeout = null; // Debounce typing updates
 
+        // --- DEMO MODE STATE ---
+        let demoEffects = [
+            { name: 'Title Effects', effects: ['fx:title1', 'fx:title2', 'fx:title3'] },
+            { name: 'Basic Animations', effects: ['fx:shake', 'fx:pulse', 'fx:wave', 'fx:zoom-in', 'fx:slide-up', 'fx:fade-in'] },
+            { name: 'Advanced Effects', effects: ['fx:burst', 'fx:rgb-glitch', 'fx:laser', 'fx:reveal-circle', 'fx:confetti'] },
+            { name: 'Text Effects', effects: ['fx:wave-mask', 'fx:glow', 'fx:glitch'] },
+            { name: 'Emoji Rain', effects: ['fx:emoji-rain:🔥', 'fx:emoji-rain:😂', 'fx:emoji-rain:🎉', 'fx:emoji-rain:⚡'] },
+            { name: 'Background Scenes', effects: ['bg:matrix', 'bg:retro-grid'] },
+            { name: 'Color Effects', effects: ['c:#ff6b6b', 'c:#4ecdc4', 'c:#45b7d1', 'c:#f9ca24', 'c:#a855f7'] }
+        ];
+        let demoCurrentCategory = 0;
+        let demoCurrentEffect = 0;
+        let demoInterval = null;
+        let demoStartTime = 0;
+
         // --- DOM ELEMENT REFERENCES ---
         const playerWrapper = document.getElementById('player-wrapper');
         const audioPlayer = document.getElementById('audioPlayer');
@@ -402,8 +1006,9 @@
         const subtitleUpload = document.getElementById('subtitle-upload');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const playIcon = document.getElementById('playIcon');
-        const pauseIcon = document.getElementById('pauseIcon');
+        // Use let so we can refresh references after Lucide replaces the <i> tags with <svg>
+        let playIcon = document.getElementById('playIcon');
+        let pauseIcon = document.getElementById('pauseIcon');
         
         const backgroundCanvas = document.getElementById('backgroundCanvas');
         const subtitleContainer = document.getElementById('subtitle-container');
@@ -431,6 +1036,7 @@
         const kineticToggle = document.getElementById('kineticToggle');
         const imageToggle = document.getElementById('imageToggle');
         const rtlToggle = document.getElementById('rtlToggle');
+        const demoModeToggle = document.getElementById('demoModeToggle');
         const highlightOffsetSlider = document.getElementById('highlightOffset');
         const highlightOffsetText = document.getElementById('highlightOffsetText');
         const highlightPacingSlider = document.getElementById('highlightPacing');
@@ -522,18 +1128,40 @@
             console.log("Subtitle file selected.");
             const file = event.target.files[0];
             if (file) {
+                // Stop current playback and reset time so the new subtitles start fresh
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+
+                // Clear previous subtitles data to avoid any persistence issues
+                subtitles = [];
+                activeCueForFocusMode = null;
+                previousActiveCueId = null;
+                lastRevealedLine = -1;
+
+                // Clear on-screen subtitle / image immediately
+                subtitleLine.textContent = '';
+                imageContainer.style.opacity = '0';
+                subtitleContainer.style.opacity = '1';
+                subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     rawVTTContent = e.target.result;
-                    if(monacoEditor) {
+                    if (monacoEditor) {
                         monacoEditor.setValue(rawVTTContent);
                     }
+
                     subtitles = parseVTTWithEffects(rawVTTContent);
-                    if (subtitles.length > 0) {
-                        subtitleLine.textContent = 'Subtitles loaded. Ready to play!';
-                    } else {
-                        subtitleLine.textContent = 'Could not parse VTT file. Please check format.';
-                    }
+
+                    // Reset the on–screen cue text immediately
+                    subtitleLine.textContent = subtitles.length > 0 ? 'Subtitles loaded. Ready to play!' : 'Could not parse VTT file. Please check format.';
+
+                    // Make sure the progress bar goes back to zero
+                    progressBar.style.width = '0%';
+
+                    // Refresh the on-screen subtitle area so no remnants from previous file remain
+                    updateSubtitles();
+
                     checkIfReady();
                 };
                 reader.readAsText(file);
@@ -547,17 +1175,26 @@
                 isReadyToPlay = true;
                 subtitleLine.textContent = 'Ready to play!';
                 
+                // Stop demo mode when real content is loaded
+                if (settings.demoModeEnabled) {
+                    settings.demoModeEnabled = false;
+                    updateToggleUI(demoModeToggle, false);
+                    stopDemoMode();
+                }
+            }
+                
                 // Parse the default VTT content and log the results for debugging
                 console.log("=== VTT PARSING TEST ===");
                 const testSubtitles = parseVTTWithEffects(rawVTTContent);
+            console.log("Raw VTT Content:", rawVTTContent);
                 console.log("Parsed subtitles:", testSubtitles);
                 testSubtitles.forEach((cue, index) => {
                     console.log(`Cue ${index + 1}:`, cue.originalText);
                     console.log("Words:", cue.words);
+                console.log("Start:", cue.start, "End:", cue.end);
                 });
                 console.log("Kinetic enabled:", settings.kineticEnabled);
                 console.log("=== END TEST ===");
-            }
         }
         
         // --- 2. SUBTITLE PARSING WITH EFFECTS ---
@@ -576,7 +1213,7 @@
 
             while(i < lines.length) {
                 if (lines[i].trim() === '' || lines[i].includes('WEBVTT')) { i++; continue; }
-                const timeMatch = lines[i].match(/(\d{1,2}:)?\d{1,2}:\d{2}\.\d{3} --> (\d{1,2}:)?\d{1,2}:\d{2}\.\d{3}/);
+                const timeMatch = lines[i].match(/(\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{3} --> (\d{1,2}:)?\d{1,2}:\d{1,2}\.\d{3}/);
                 if (timeMatch) {
                     const cueLineNumber = i + 1; // Store original line number for editor highlighting
                     const [startTime, endTime] = lines[i].split(' --> ');
@@ -603,25 +1240,26 @@
                         };
                     }
                     
+                    // Handle background scene tags
+                    const bgRegex = /<bg:([^>]+)>/;
+                    const bgMatch = processedText.match(bgRegex);
+                    let backgroundScene = null;
+                    
+                    if(bgMatch) {
+                        backgroundScene = `bg-${bgMatch[1].trim()}`;
+                        processedText = processedText.replace(bgRegex, '').trim();
+                    }
+                    
                     const finalWords = [];
-                    // Regex to capture either <c:color>text</c> or <fx:effect>text</fx> or <img:src,fx:effect>
-                    const regex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1>|<(img):([^>]+)>/g;
+                    // Updated regex to better handle emoji characters and special closing tags
+                    const regex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1(?::[^>]*)?>|<(img):([^>]+)>/g;
                     let lastIndex = 0;
                     let wordMatch;
                     
                     console.log(`Parsing cue text: "${processedText}"`);
                     
-                    // Debug: Test the regex directly
-                    const testRegex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1(?::\2)?>/g;
-                    console.log("Testing regex on:", processedText);
-                    console.log("Regex pattern:", testRegex.source);
-                    
-                    // Test with a simple case
-                    const testMatch = testRegex.exec(processedText);
-                    console.log("Direct regex test result:", testMatch);
-                    
-                    // Reset regex for actual parsing
-                    const effectsRegex = /<([a-zA-Z0-9\-]+):([^>]+)>(.*?)<\/\1(?::\2)?>|<(img):([^>]+)>/g;
+                    // Improved regex that handles emoji characters better
+                    const effectsRegex = /<([a-zA-Z0-9\-]+):([^>]*?)>(.*?)<\/\1(?::[^>]*)?>/g;
                     
                     while ((wordMatch = effectsRegex.exec(processedText)) !== null) {
                         console.log("Found match:", wordMatch);
@@ -633,21 +1271,34 @@
                                 finalWords.push({ type: 'text', text: word, effects: {} });
                             });
                         }
-                        if (wordMatch[1]) { // Matched <tag:value>content</tag>
-                            const [, tagType, tagValue, tagContent] = wordMatch;
-                            console.log(`Matched tag: ${tagType}:${tagValue} with content: "${tagContent}"`);
-                            const effects = {};
-                            if (tagType === 'c') effects.color = tagValue;
-                            else if (tagType === 'fx') {
-                                effects.animation = tagValue;
-                                console.log(`Parsed fx effect: ${tagValue} for content: "${tagContent}"`);
-                            }
+                        
+                        const [, tagType, tagValue, tagContent] = wordMatch;
+                        console.log(`Matched tag: ${tagType}:${tagValue} with content: "${tagContent}"`);
+                        const effects = {};
+                        
+                        if (tagType === 'c') {
+                            effects.color = tagValue;
+                        } else if (tagType === 'fx') {
+                            effects.animation = tagValue;
+                            console.log(`Parsed fx effect: ${tagValue} for content: "${tagContent}"`);
+                        }
+                        
+                        if (tagContent.trim()) {
                             tagContent.trim().split(' ').filter(w => w).forEach(word => {
                                 console.log(`Adding word with effects:`, { text: word, effects: effects });
                                 finalWords.push({ type: 'text', text: word, effects: effects });
                             });
-                        } else if (wordMatch[4]) { // Matched <img:src,fx:effect>
-                            const parts = wordMatch[5].split(',');
+                        }
+                        
+                        lastIndex = effectsRegex.lastIndex;
+                    }
+                    
+                    // Handle standalone image tags
+                    const imageRegex = /<(img):([^>]+)>/g;
+                    let imageMatch;
+                    while ((imageMatch = imageRegex.exec(processedText)) !== null) {
+                        if (imageMatch.index >= lastIndex) {
+                            const parts = imageMatch[2].split(',');
                             const src = parts[0].trim();
                             const effects = {};
                             if(parts[1]) {
@@ -658,7 +1309,6 @@
                             }
                             finalWords.push({ type: 'image', src: src, effects: effects });
                         }
-                        lastIndex = effectsRegex.lastIndex;
                     }
 
                     // Add any remaining plain text after the last tag
@@ -672,12 +1322,162 @@
 
                     console.log("Final words array:", finalWords);
 
-                    cues.push({ start, end, words: finalWords, mood: mood, lineNumber: cueLineNumber, originalText: text });
+                    cues.push({ start, end, words: finalWords, mood: mood, lineNumber: cueLineNumber, originalText: text, backgroundScene });
                 } else {
                     i++;
                 }
             }
             return cues;
+        }
+
+        // --- DEMO MODE FUNCTIONS ---
+        function startDemoMode() {
+            console.log("Starting demo mode");
+            demoCurrentCategory = 0;
+            demoCurrentEffect = 0;
+            demoStartTime = Date.now();
+            
+            // Create demo subtitle content
+            createDemoSubtitle();
+            
+            // Start cycling through effects
+            demoInterval = setInterval(cycleDemoEffect, 1500); // Change effect every 1.5 seconds
+            
+            // Show info in subtitle line
+            subtitleLine.innerHTML = `<div style="text-align: center; margin-bottom: 10px;"><strong>Demo Mode Active</strong><br><span style="opacity: 0.7; font-size: 0.8em;">Cycling through all available effects</span></div>`;
+        }
+        
+        function stopDemoMode() {
+            console.log("Stopping demo mode");
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+            }
+            
+            // Clear demo subtitle
+            subtitleLine.innerHTML = 'Upload an audio and subtitle file to begin.';
+            imageContainer.style.opacity = '0';
+            subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+        }
+        
+        function cycleDemoEffect() {
+            const currentCategory = demoEffects[demoCurrentCategory];
+            const currentEffect = currentCategory.effects[demoCurrentEffect];
+            
+            console.log(`Demo: ${currentCategory.name} - ${currentEffect}`);
+            
+            // Create demo content based on effect type
+            let demoContent = '';
+            let hasBackground = false;
+            
+            if (currentEffect.startsWith('bg:')) {
+                hasBackground = true;
+                subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+                subtitleContainer.classList.add(currentEffect.replace(':', '-'));
+                demoContent = `<div class="text-center"><strong>${currentCategory.name}</strong><br><span class="text-lg">Background: ${currentEffect}</span></div>`;
+            } else if (currentEffect.startsWith('c:')) {
+                const color = currentEffect.split(':')[1];
+                demoContent = `<div class="text-center"><strong>${currentCategory.name}</strong><br><span class="text-xl is-highlighted" style="color: ${color};">Colored Text</span></div>`;
+            } else if (currentEffect.startsWith('fx:')) {
+                const effectName = currentEffect.split(':')[1];
+                let effectClass = `fx-${effectName}`;
+                
+                // Handle special emoji rain effects
+                if (effectName.startsWith('emoji-rain')) {
+                    const parts = effectName.split(':');
+                    if (parts.length > 1) {
+                        const emoji = parts[1];
+                        effectClass = `fx-emoji-rain`;
+                        // Create custom style for this emoji
+                        const styleId = `demo-emoji-${Date.now()}`;
+                        const style = document.createElement('style');
+                        style.id = styleId;
+                        style.textContent = `
+                            .${styleId}::before {
+                                content: '${emoji}';
+                                position: absolute;
+                                top: -50px;
+                                left: 50%;
+                                width: 2px;
+                                height: 2px;
+                                color: transparent;
+                                font-size: 20px;
+                                animation: emoji-storm-1 3s linear infinite;
+                                pointer-events: none;
+                                z-index: 10;
+                                box-shadow: 
+                                    -100px 0 0 0 currentColor, -80px 0 0 0 currentColor, -60px 0 0 0 currentColor, -40px 0 0 0 currentColor, -20px 0 0 0 currentColor,
+                                    0px 0 0 0 currentColor, 20px 0 0 0 currentColor, 40px 0 0 0 currentColor, 60px 0 0 0 currentColor, 80px 0 0 0 currentColor, 100px 0 0 0 currentColor,
+                                    -90px 20px 0 0 currentColor, -70px 20px 0 0 currentColor, -50px 20px 0 0 currentColor, -30px 20px 0 0 currentColor, -10px 20px 0 0 currentColor,
+                                    10px 20px 0 0 currentColor, 30px 20px 0 0 currentColor, 50px 20px 0 0 currentColor, 70px 20px 0 0 currentColor, 90px 20px 0 0 currentColor,
+                                    -110px 40px 0 0 currentColor, -85px 40px 0 0 currentColor, -65px 40px 0 0 currentColor, -45px 40px 0 0 currentColor, -25px 40px 0 0 currentColor,
+                                    -5px 40px 0 0 currentColor, 15px 40px 0 0 currentColor, 35px 40px 0 0 currentColor, 55px 40px 0 0 currentColor, 75px 40px 0 0 currentColor, 95px 40px 0 0 currentColor;
+                            }
+                            .${styleId}::after {
+                                content: '${emoji}';
+                                position: absolute;
+                                top: -70px;
+                                left: 50%;
+                                width: 2px;
+                                height: 2px;
+                                color: transparent;
+                                font-size: 18px;
+                                animation: emoji-storm-2 3.5s linear infinite 1s;
+                                pointer-events: none;
+                                z-index: 9;
+                                box-shadow: 
+                                    -95px 10px 0 0 currentColor, -75px 10px 0 0 currentColor, -55px 10px 0 0 currentColor, -35px 10px 0 0 currentColor, -15px 10px 0 0 currentColor,
+                                    5px 10px 0 0 currentColor, 25px 10px 0 0 currentColor, 45px 10px 0 0 currentColor, 65px 10px 0 0 currentColor, 85px 10px 0 0 currentColor,
+                                    -105px 30px 0 0 currentColor, -80px 30px 0 0 currentColor, -60px 30px 0 0 currentColor, -40px 30px 0 0 currentColor, -20px 30px 0 0 currentColor,
+                                    0px 30px 0 0 currentColor, 20px 30px 0 0 currentColor, 40px 30px 0 0 currentColor, 60px 30px 0 0 currentColor, 80px 30px 0 0 currentColor, 100px 30px 0 0 currentColor,
+                                    -115px 50px 0 0 currentColor, -90px 50px 0 0 currentColor, -70px 50px 0 0 currentColor, -50px 50px 0 0 currentColor, -30px 50px 0 0 currentColor,
+                                    -10px 50px 0 0 currentColor, 10px 50px 0 0 currentColor, 30px 50px 0 0 currentColor, 50px 50px 0 0 currentColor, 70px 50px 0 0 currentColor, 90px 50px 0 0 currentColor;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        effectClass = `fx-emoji-rain ${styleId}`;
+                        // Clean up after effect
+                        setTimeout(() => {
+                            if (style.parentNode) {
+                                style.parentNode.removeChild(style);
+                            }
+                        }, 4000);
+                    }
+                }
+                
+                demoContent = `<div class="text-center"><strong>${currentCategory.name}</strong><br><span class="text-2xl is-highlighted ${effectClass}">Effect Demo</span></div>`;
+            }
+            
+            // Clear background if not a background effect
+            if (!hasBackground) {
+                subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+            }
+            
+            // Update subtitle content
+            subtitleLine.innerHTML = demoContent;
+            
+            // Move to next effect
+            demoCurrentEffect++;
+            if (demoCurrentEffect >= currentCategory.effects.length) {
+                demoCurrentEffect = 0;
+                demoCurrentCategory++;
+                if (demoCurrentCategory >= demoEffects.length) {
+                    demoCurrentCategory = 0;
+                }
+            }
+        }
+        
+        function createDemoSubtitle() {
+            // Ensure we're showing subtitles, not images
+            imageContainer.style.opacity = '0';
+            subtitleContainer.style.opacity = '1';
+            
+            // Enable kinetic effects for demo
+            const wasKineticEnabled = settings.kineticEnabled;
+            settings.kineticEnabled = true;
+            
+            // Start first effect immediately
+            cycleDemoEffect();
         }
 
         // --- 3. AUDIO VISUALIZATION (WEB AUDIO API) ---
@@ -739,6 +1539,8 @@
             requestAnimationFrame(animatePlayer);
             if (audioPlayer.paused) return; 
             drawDynamicBackground();
+            // Extra safeguard ‑ update subtitles every frame for tighter sync
+            updateSubtitles();
         }
 
         // --- 4. PLAYBACK & SETTINGS CONTROLS ---
@@ -813,6 +1615,13 @@
         
         function toggleAdvancedMode(enabled) {
             if (enabled) {
+                // Stop demo mode when advanced mode is enabled
+                if (settings.demoModeEnabled) {
+                    settings.demoModeEnabled = false;
+                    updateToggleUI(demoModeToggle, false);
+                    stopDemoMode();
+                }
+                
                 advancedModePanel.classList.remove('hidden');
                 requestAnimationFrame(() => {
                     playerWrapper.classList.remove('w-full', 'max-w-lg');
@@ -892,6 +1701,18 @@
             updateMonacoEditorContent(); // Update editor content when RTL is toggled
         });
 
+        demoModeToggle.addEventListener('click', () => {
+            console.log("Demo Mode toggle clicked.");
+            settings.demoModeEnabled = !settings.demoModeEnabled;
+            updateToggleUI(demoModeToggle, settings.demoModeEnabled);
+            
+            if (settings.demoModeEnabled) {
+                startDemoMode();
+            } else {
+                stopDemoMode();
+            }
+        });
+
         highlightOffsetSlider.addEventListener('input', (e) => {
             settings.highlightOffset = parseFloat(e.target.value);
             highlightOffsetText.textContent = `${settings.highlightOffset.toFixed(2)}s`;
@@ -916,13 +1737,16 @@
 
 
         audioPlayer.onplay = () => {
-            playIcon.classList.add('hidden');
-            pauseIcon.classList.remove('hidden');
+            console.log("Audio started playing - updating to pause icon");
+            document.getElementById('playIcon').classList.add('hidden');
+            document.getElementById('pauseIcon').classList.remove('hidden');
             animatePlayer();
         };
+        
         audioPlayer.onpause = () => {
-            playIcon.classList.remove('hidden');
-            pauseIcon.classList.add('hidden');
+            console.log("Audio paused - updating to play icon");
+            document.getElementById('playIcon').classList.remove('hidden');
+            document.getElementById('pauseIcon').classList.add('hidden');
         };
         audioPlayer.onloadedmetadata = () => updateTimeDisplay();
         audioPlayer.ontimeupdate = () => {
@@ -985,21 +1809,67 @@
                     subtitleContainer.style.opacity = '0';
                     const imageData = currentCue.words.find(w => w.type === 'image');
                     const imageSrc = pastedImages[imageData.src] || imageData.src;
-                    if (imageData && cueImage.src !== imageSrc) {
-                           cueImage.src = imageSrc;
-                    }
-                    imageContainer.style.opacity = '1';
-                    
-                    cueImage.className = 'max-w-full max-h-full object-contain rounded-lg shadow-lg';
-                    if(settings.kineticEnabled && imageData.effects && imageData.effects.animation) {
-                        cueImage.style.animationDuration = `${currentCue.end - currentCue.start}s`;
-                        cueImage.classList.add(`fx-image-${imageData.effects.animation}`);
-                    } else {
-                        cueImage.style.animationName = '';
-                    }
 
-                } else {
+                    // Hide container while new image loads to prevent showing old frame
                     imageContainer.style.opacity = '0';
+
+                    if (imageData) {
+                         // Set up onload handler before changing src
+                         cueImage.onload = () => {
+                             // Only reveal once the correct image is fully loaded
+                             imageContainer.style.opacity = '1';
+                         };
+
+                         // Force load even if same src (e.g., repeated cue) by clearing first
+                         if (cueImage.src !== imageSrc) {
+                           cueImage.src = imageSrc;
+                         } else {
+                             // Image unchanged – reveal immediately
+                    imageContainer.style.opacity = '1';
+                         }
+                     }
+
+                     /* --- Apply kinetic / sizing rules for image effects --- */
+                     cueImage.className = 'w-full h-full object-contain rounded-lg shadow-lg';
+
+                     if (settings.kineticEnabled && imageData.effects && imageData.effects.animation) {
+                         const cueDuration = currentCue.end - currentCue.start;
+                         cueImage.style.animationDuration = `${cueDuration}s`;
+                         cueImage.style.setProperty('--cue-duration', `${cueDuration}s`);
+                        cueImage.classList.add(`fx-image-${imageData.effects.animation}`);
+
+                         // Position adjustments for edge-style effects
+                         if (['edge', 'edge-talk'].includes(imageData.effects.animation)) {
+                             imageContainer.style.justifyContent = 'flex-end';
+                             imageContainer.style.alignItems = 'flex-start';
+                             cueImage.style.width = '';
+                             cueImage.style.height = '';
+                             cueImage.style.maxWidth = '150px';
+                             cueImage.style.maxHeight = '150px';
+                    } else {
+                             imageContainer.style.justifyContent = 'center';
+                             imageContainer.style.alignItems = 'center';
+                             cueImage.style.width = '100%';
+                             cueImage.style.height = 'auto';
+                             cueImage.style.maxWidth = '';
+                             cueImage.style.maxHeight = '';
+                         }
+                     } else {
+                         // No kinetic effect
+                        cueImage.style.animationName = '';
+                         imageContainer.style.justifyContent = 'center';
+                         imageContainer.style.alignItems = 'center';
+                         cueImage.style.width = '100%';
+                         cueImage.style.height = 'auto';
+                         cueImage.style.maxWidth = '';
+                         cueImage.style.maxHeight = '';
+                     }
+                } else {
+                     // Ensure previous image is hidden and cleared when switching back to text
+                    imageContainer.style.opacity = '0';
+                     cueImage.onload = null;
+                     // Optional: clear src so the old image won't flash later
+                     cueImage.src = '';
                     subtitleContainer.style.opacity = '1';
 
                     const words = currentCue.words.filter(w => w.type === 'text');
@@ -1120,14 +1990,71 @@
                                      }
 
                                      // Apply animation classes when the GROUP is highlighted (not per-word)
-                                     if (isHighlighted && word.effects.animation) {
-                                         if (word.effects.animation !== 'wave') {
+                                     if (word.effects.animation) {
+                                         console.log(`Processing animation: ${word.effects.animation} for word: ${word.text}`);
+                                         if (word.effects.animation.startsWith('emoji-rain')) {
+                                             // Extract emoji from effect name (e.g., "emoji-rain:🔥" or "emoji-rain:😂,0.5")
+                                             const parts = word.effects.animation.split(':');
+                                             if (parts.length > 1) {
+                                                 const emojiParts = parts[1].split(',');
+                                                 const emoji = emojiParts[0] || '🔥';
+                                                 
+                                                 console.log(`Applying emoji storm effect with emoji: ${emoji}`);
+                                                 
+                                                 // Create or get storm container within subtitle area
+                                                 let stormContainer = subtitleContainer.querySelector('.emoji-storm-container');
+                                                 if (!stormContainer) {
+                                                     stormContainer = document.createElement('div');
+                                                     stormContainer.className = 'emoji-storm-container';
+                                                     stormContainer.setAttribute('data-emoji', emoji);
+                                                     subtitleContainer.appendChild(stormContainer);
+                                                     
+                                                     // Create fast emoji particles for quick word-duration effect
+                                                     for (let i = 0; i < 50; i++) {
+                                                         const particle = document.createElement('div');
+                                                         particle.className = 'emoji-storm-particle';
+                                                         particle.textContent = emoji;
+                                                         
+                                                         // Full width distribution for subtitle area coverage
+                                                         const basePosition = (i * 2) % 100;
+                                                         particle.style.left = basePosition + (Math.random() * 6 - 3) + '%';
+                                                         
+                                                         // Fast, immediate delays for word-duration timing
+                                                         const baseDelay = (i * 0.02) % 0.8;
+                                                         particle.style.animationDelay = (baseDelay + Math.random() * 0.2) + 's';
+                                                         
+                                                         // Start from above subtitle area, with varied heights
+                                                         particle.style.top = (Math.random() * -80 - 20) + 'px';
+                                                         
+                                                         // Ensure particles reach through full subtitle height
+                                                         const baseDuration = parseFloat(getComputedStyle(particle).animationDuration) || 0.5;
+                                                         particle.style.animationDuration = (baseDuration + Math.random() * 0.2 - 0.1) + 's';
+                                                         
+                                                         stormContainer.appendChild(particle);
+                                                     }
+                                                 }
+                                                 
+                                                 // Just highlight the word normally
+                                                 classes = isHighlighted ? 'is-highlighted' : '';
+                                                 
+                                                 console.log(`Applied emoji storm background effect: ${emoji}`);
+                                             } else {
+                                                 // Fallback if no emoji specified
+                                                 classes += ' fx-emoji-rain';
+                                             }
+                                         } else if (isHighlighted && word.effects.animation === 'wave') {
+                                             classes += ' fx-wave';
+                                             content = word.text.split('').map((char, charIndex) =>
+                                                 `<span style="animation-delay: ${charIndex * 0.05}s">${char}</span>`
+                                             ).join('');
+                                             console.log('Applied wave effect');
+                                         } else if (isHighlighted && word.effects.animation !== 'wave') {
                                              classes += ` fx-${word.effects.animation}`;
                                              console.log(`Applied animation class: fx-${word.effects.animation}`);
                                          }
                                      }
 
-                                     if (isHighlighted && word.effects.animation === 'wave') {
+                                     if (word.effects.animation === 'wave') {
                                          classes += ' fx-wave';
                                          content = word.text.split('').map((char, charIndex) =>
                                              `<span style="animation-delay: ${charIndex * 0.05}s">${char}</span>`
@@ -1142,11 +2069,38 @@
                         });
 
                         subtitleLine.innerHTML = htmlParts.join('');
+                        
+                        // Check if current cue has any emoji rain effects, remove storm if not
+                        const hasEmojiRain = words.some(word => 
+                            word.effects && word.effects.animation && word.effects.animation.startsWith('emoji-rain')
+                        );
+                        
+                        if (!hasEmojiRain) {
+                            const stormContainer = subtitleContainer.querySelector('.emoji-storm-container');
+                            if (stormContainer) {
+                                stormContainer.remove();
+                            }
+                        }
                     }
                 }
             } else {
                 subtitleLine.innerHTML = '';
                 imageContainer.style.opacity = '0';
+                         
+                         // Remove any background scene effects when no cue is active
+                         subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+                         
+                         // Remove emoji storm when no cue is active
+                         const stormContainer = subtitleContainer.querySelector('.emoji-storm-container');
+                         if (stormContainer) {
+                             stormContainer.remove();
+                         }
+                     }
+                     
+                     // Handle background scene switches
+                     if (currentCue && currentCue.backgroundScene) {
+                         subtitleContainer.classList.remove('bg-matrix', 'bg-retro-grid');
+                         subtitleContainer.classList.add(currentCue.backgroundScene);
             }
         }
 
@@ -1262,6 +2216,7 @@
             updateToggleUI(kineticToggle, settings.kineticEnabled);
             updateToggleUI(imageToggle, settings.imagesEnabled);
             updateToggleUI(rtlToggle, settings.rtlEnabled);
+                     updateToggleUI(demoModeToggle, settings.demoModeEnabled);
             applyRtlMode();
             highlightOffsetSlider.value = settings.highlightOffset;
             highlightOffsetText.textContent = `${settings.highlightOffset.toFixed(2)}s`;
@@ -1481,14 +2436,16 @@
                 const notification = document.createElement('div');
                 notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
                 notification.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                    </svg>
+                             <i data-lucide="clipboard" class="w-5 h-5"></i>
                     <span>Click in the editor below, then press <strong>Ctrl+V</strong> (or <strong>Cmd+V</strong>) to paste image</span>
                     <button onclick="this.parentElement.remove()" class="ml-2 text-white/80 hover:text-white">✕</button>
                 `;
                 document.body.appendChild(notification);
+                         
+                         // Initialize Lucide icons in the notification
+                         if (typeof lucide !== 'undefined') {
+                             lucide.createIcons();
+                         }
                 
                 // Focus the editor
                 monacoEditor.focus();
@@ -1507,15 +2464,16 @@
                 const notification = document.createElement('div');
                 notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
                 notification.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <path d="M12 9v4"/>
-                        <path d="m12 17 .01 0"/>
-                    </svg>
+                             <i data-lucide="triangle-alert" class="w-5 h-5"></i>
                     <span>No image found in clipboard. Copy an image first!</span>
                     <button onclick="this.parentElement.remove()" class="ml-2 text-white/80 hover:text-white">✕</button>
                 `;
                 document.body.appendChild(notification);
+                         
+                         // Initialize Lucide icons in the notification
+                         if (typeof lucide !== 'undefined') {
+                             lucide.createIcons();
+                         }
                 
                 setTimeout(() => {
                     if (notification.parentElement) {
@@ -1551,12 +2509,15 @@
                 const notification = document.createElement('div');
                 notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
                 notification.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 6L9 17l-5-5"/>
-                    </svg>
+                             <i data-lucide="check" class="w-5 h-5"></i>
                     <span>Image pasted successfully!</span>
                 `;
                 document.body.appendChild(notification);
+                         
+                         // Initialize Lucide icons in the notification
+                         if (typeof lucide !== 'undefined') {
+                             lucide.createIcons();
+                         }
                 
                 setTimeout(() => {
                     if (notification.parentElement) {
@@ -1591,6 +2552,11 @@
         window.addEventListener('resize', resizeAllCanvases);
         resizeAllCanvases();
         initializeSettings();
+                 
+                 // Initialize Lucide icons
+                 if (typeof lucide !== 'undefined') {
+                     lucide.createIcons();
+                 }
     }
     </script>
 </body>
